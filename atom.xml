@@ -5,9 +5,9 @@
   <subtitle>人生没有白走的路，每一步都算数</subtitle>
   <link href="/atom.xml" rel="self"/>
   
-  <link href="bryancrash.site/"/>
+  <link href="http://bryancrash.site/"/>
   <updated>2017-11-26T04:24:55.379Z</updated>
-  <id>bryancrash.site/</id>
+  <id>http://bryancrash.site/</id>
   
   <author>
     <name>bryan</name>
@@ -18,8 +18,8 @@
   
   <entry>
     <title>My Gallery</title>
-    <link href="bryancrash.site/2017/11/18/My-Gallery/"/>
-    <id>bryancrash.site/2017/11/18/My-Gallery/</id>
+    <link href="http://bryancrash.site/2017/11/18/My-Gallery/"/>
+    <id>http://bryancrash.site/2017/11/18/My-Gallery/</id>
     <published>2017-11-18T11:08:12.000Z</published>
     <updated>2017-11-26T04:24:55.379Z</updated>
     
@@ -27,19 +27,19 @@
     
     </summary>
     
-      <category term="Thinking" scheme="bryancrash.site/categories/Thinking/"/>
+      <category term="Thinking" scheme="http://bryancrash.site/categories/Thinking/"/>
     
     
-      <category term="test" scheme="bryancrash.site/tags/test/"/>
+      <category term="test" scheme="http://bryancrash.site/tags/test/"/>
     
-      <category term="Hexo" scheme="bryancrash.site/tags/Hexo/"/>
+      <category term="Hexo" scheme="http://bryancrash.site/tags/Hexo/"/>
     
   </entry>
   
   <entry>
     <title>Hello World</title>
-    <link href="bryancrash.site/2017/10/17/hello-world/"/>
-    <id>bryancrash.site/2017/10/17/hello-world/</id>
+    <link href="http://bryancrash.site/2017/10/17/hello-world/"/>
+    <id>http://bryancrash.site/2017/10/17/hello-world/</id>
     <published>2017-10-17T14:59:05.320Z</published>
     <updated>2017-10-17T14:59:05.320Z</updated>
     

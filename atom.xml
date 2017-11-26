@@ -5,9 +5,9 @@
   <subtitle>人生没有白走的路，每一步都算数</subtitle>
   <link href="/atom.xml" rel="self"/>
   
-  <link href="http://yoursite.com/"/>
-  <updated>2017-11-25T14:19:15.138Z</updated>
-  <id>http://yoursite.com/</id>
+  <link href="bryancrash.site/"/>
+  <updated>2017-11-26T04:24:55.379Z</updated>
+  <id>bryancrash.site/</id>
   
   <author>
     <name>bryan</name>
@@ -18,28 +18,28 @@
   
   <entry>
     <title>My Gallery</title>
-    <link href="http://yoursite.com/2017/11/18/My-Gallery/"/>
-    <id>http://yoursite.com/2017/11/18/My-Gallery/</id>
+    <link href="bryancrash.site/2017/11/18/My-Gallery/"/>
+    <id>bryancrash.site/2017/11/18/My-Gallery/</id>
     <published>2017-11-18T11:08:12.000Z</published>
-    <updated>2017-11-25T14:19:15.138Z</updated>
+    <updated>2017-11-26T04:24:55.379Z</updated>
     
     <summary type="html">
     
     </summary>
     
-      <category term="Thinking" scheme="http://yoursite.com/categories/Thinking/"/>
+      <category term="Thinking" scheme="bryancrash.site/categories/Thinking/"/>
     
     
-      <category term="test" scheme="http://yoursite.com/tags/test/"/>
+      <category term="test" scheme="bryancrash.site/tags/test/"/>
     
-      <category term="Hexo" scheme="http://yoursite.com/tags/Hexo/"/>
+      <category term="Hexo" scheme="bryancrash.site/tags/Hexo/"/>
     
   </entry>
   
   <entry>
     <title>Hello World</title>
-    <link href="http://yoursite.com/2017/10/17/hello-world/"/>
-    <id>http://yoursite.com/2017/10/17/hello-world/</id>
+    <link href="bryancrash.site/2017/10/17/hello-world/"/>
+    <id>bryancrash.site/2017/10/17/hello-world/</id>
     <published>2017-10-17T14:59:05.320Z</published>
     <updated>2017-10-17T14:59:05.320Z</updated>
     

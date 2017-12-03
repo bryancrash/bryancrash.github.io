@@ -105,7 +105,7 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://p0c736231.bkt.clouddn.com/%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B.png">
 <meta property="og:image" content="http://p0c736231.bkt.clouddn.com/Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B.png">
-<meta property="og:updated_time" content="2017-12-02T14:37:22.098Z">
+<meta property="og:updated_time" content="2017-12-02T15:52:19.417Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java内存模型">
 <meta name="twitter:description" content="前言 Java虚拟机在执行Java程序的时候会把管理的内存划分为若干个不同的数据区域，这些区域都有各自的用途，以及创建和销毁的时间，有的是线程共享的，有的是线程共享的，有的是线程隔离的；Java虚拟机所管理的内存区域具体包含以下几个运行时数据区域： 程序计数器程序计数器是线程私有的，它可以看做是当前线程所执行的字节码的行号指示器，字节码解释器工作时就是通过改变这个计数器的值来选择下一条需要执行的字">
@@ -247,6 +247,16 @@
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
             归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-photos">
+          <a href="/photos/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-photo"></i> <br />
+            
+            相册
           </a>
         </li>
       
@@ -743,7 +753,18 @@
             </div>
           
 
-          <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=480442842&auto=0&height=66"></iframe>
+          <% if (site.data.links){ %>
+  <div class="widget tag">
+    <h3 class="title">友情链接</h3>
+      <ul class="entry">
+        <% for (var i in site.data.links){ %>
+          <li class='link'><a href='<%- site.data.links[i] %>'><%= i %></a></li>
+        <% } %>
+      </ul>
+  </div>
+<% } %>
+
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=480442842&auto=0&height=66"></iframe>
 
         </div>
       </section>

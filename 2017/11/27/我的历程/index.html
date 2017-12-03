@@ -103,7 +103,7 @@
 <meta property="og:site_name" content="林距离">
 <meta property="og:description" content="前言 我最终走上技术岗是跟我的兴趣和性格完全相关的，记得高中的时候最喜欢的两门课是数学和物理，在同学们的眼里我就学两门课，那就是数学和物理，我所在的高中有一个优良的传统，那就是每天晚上七点看新闻联播，这也是我们接触外界信息最主要的渠道了，有时候看着新闻联播看到一些科技创新，一些发明就很振奋，心里暗示自己以后也应该成为这样的人，所以高考的时候根据自己的成绩第一志愿报了西电，第一专业计算机专业。但是最">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2017-11-27T16:01:38.756Z">
+<meta property="og:updated_time" content="2017-12-02T15:52:14.251Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="我的历程">
 <meta name="twitter:description" content="前言 我最终走上技术岗是跟我的兴趣和性格完全相关的，记得高中的时候最喜欢的两门课是数学和物理，在同学们的眼里我就学两门课，那就是数学和物理，我所在的高中有一个优良的传统，那就是每天晚上七点看新闻联播，这也是我们接触外界信息最主要的渠道了，有时候看着新闻联播看到一些科技创新，一些发明就很振奋，心里暗示自己以后也应该成为这样的人，所以高考的时候根据自己的成绩第一志愿报了西电，第一专业计算机专业。但是最">
@@ -244,6 +244,16 @@
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
             归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-photos">
+          <a href="/photos/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-photo"></i> <br />
+            
+            相册
           </a>
         </li>
       
@@ -740,7 +750,18 @@
             </div>
           
 
-          <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=480442842&auto=0&height=66"></iframe>
+          <% if (site.data.links){ %>
+  <div class="widget tag">
+    <h3 class="title">友情链接</h3>
+      <ul class="entry">
+        <% for (var i in site.data.links){ %>
+          <li class='link'><a href='<%- site.data.links[i] %>'><%= i %></a></li>
+        <% } %>
+      </ul>
+  </div>
+<% } %>
+
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=480442842&auto=0&height=66"></iframe>
 
         </div>
       </section>

@@ -104,7 +104,7 @@
 <meta property="og:description" content="前言上次在给大家分享的过程中给大家提到过关于技术基础的重要性，不知道大家对这个基础知识的重视程度有多高，大家的体会可能并不深，基础知识的掌握程度其实为了长久的发展，你的技术深度以及后面解决问题的能力，如果让我再重新走一遍大学，我会用大量的时间去学习这些基础的知识，这样我在后面的工作中省下好多的时间去做别的事，学习大家要学会投资时间。最近在极客时间陈皓的专栏中谈到了如何拥有技术领导力，全篇第一部分就">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://p0c736231.bkt.clouddn.com/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86.png">
-<meta property="og:updated_time" content="2017-12-02T15:33:16.698Z">
+<meta property="og:updated_time" content="2017-12-02T15:52:12.007Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="论技术基础的重要性">
 <meta name="twitter:description" content="前言上次在给大家分享的过程中给大家提到过关于技术基础的重要性，不知道大家对这个基础知识的重视程度有多高，大家的体会可能并不深，基础知识的掌握程度其实为了长久的发展，你的技术深度以及后面解决问题的能力，如果让我再重新走一遍大学，我会用大量的时间去学习这些基础的知识，这样我在后面的工作中省下好多的时间去做别的事，学习大家要学会投资时间。最近在极客时间陈皓的专栏中谈到了如何拥有技术领导力，全篇第一部分就">
@@ -246,6 +246,16 @@
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
             归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-photos">
+          <a href="/photos/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-photo"></i> <br />
+            
+            相册
           </a>
         </li>
       
@@ -772,7 +782,18 @@
             </div>
           
 
-          <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=480442842&auto=0&height=66"></iframe>
+          <% if (site.data.links){ %>
+  <div class="widget tag">
+    <h3 class="title">友情链接</h3>
+      <ul class="entry">
+        <% for (var i in site.data.links){ %>
+          <li class='link'><a href='<%- site.data.links[i] %>'><%= i %></a></li>
+        <% } %>
+      </ul>
+  </div>
+<% } %>
+
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=480442842&auto=0&height=66"></iframe>
 
         </div>
       </section>

@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://bryancrash.site/"/>
-  <updated>2017-12-02T15:52:12.007Z</updated>
+  <updated>2018-01-08T13:21:20.300Z</updated>
   <id>http://bryancrash.site/</id>
   
   <author>
@@ -15,6 +15,56 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>用思维导图学习Java</title>
+    <link href="http://bryancrash.site/2018/01/08/%E7%94%A8%E6%80%9D%E7%BB%B4%E5%AF%BC%E5%9B%BE%E5%AD%A6%E4%B9%A0Java/"/>
+    <id>http://bryancrash.site/2018/01/08/用思维导图学习Java/</id>
+    <published>2018-01-08T13:02:14.000Z</published>
+    <updated>2018-01-08T13:21:20.300Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>我在入职的六个看了一些Java的经典书籍，其中包括《Java编程思想》、《深入理解Java虚拟机》、《Effective Java》、《Java并发编程实战》等，并对其中一部分整理了详细的思维导图，思维导图基本涵盖了书中大多数的知识点，这样方便我在后面的巩固学习。</p><h3 id="Java面向对象"><a href="#Java面向对象" class="headerlink" title="Java面向对象"></a>Java面向对象</h3><html><br>  <body><br>    <div><br>        <iframe id="embed_dom" name="embed_dom" frameborder="0" style="display:block;width:100%; height:600px;" src="https://www.processon.com/embed/mind/5a0fdd57e4b06c8e1092b3ea"></iframe><br>      </div><br>   </body><br></html><h3 id="Java高级语法"><a href="#Java高级语法" class="headerlink" title="Java高级语法"></a>Java高级语法</h3><html><br>  <body><br>    <div><br>       <iframe id="embed_dom" name="embed_dom" frameborder="0" style="display:block;width:100%; height:600px;" src="https://www.processon.com/embed/mind/5a1c3221e4b00f2396d0d56e"></iframe><br>      </div><br>   </body><br></html><h3 id="Java虚拟机"><a href="#Java虚拟机" class="headerlink" title="Java虚拟机"></a>Java虚拟机</h3><html><br>  <body><br>    <div><br>       <iframe id="embed_dom" name="embed_dom" frameborder="0" style="display:block;width:100%; height:600px;" src="https://www.processon.com/embed/mind/5a328ad2e4b09415c8ac69dc"></iframe><br>      </div><br>   </body><br></html><h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>在后面的学习中我都会将知识点整理成思维导图的形式，这样整个知识才能系统化，同时我将会把重点知识整理到博客中。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;我在入职的六个看了一些Java的经典书籍，其中包括《Java编程思想》、《深入理解Java虚拟机》、《Effective Java》、《Ja
+      
+    
+    </summary>
+    
+      <category term="-Java" scheme="http://bryancrash.site/categories/Java/"/>
+    
+    
+      <category term="-思维导图 -Java基础" scheme="http://bryancrash.site/tags/%E6%80%9D%E7%BB%B4%E5%AF%BC%E5%9B%BE-Java%E5%9F%BA%E7%A1%80/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>HashMap源码分析</title>
+    <link href="http://bryancrash.site/2017/12/24/HashMap%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+    <id>http://bryancrash.site/2017/12/24/HashMap源码分析/</id>
+    <published>2017-12-24T13:13:38.000Z</published>
+    <updated>2017-12-24T15:03:25.337Z</updated>
+    
+    <content type="html"><![CDATA[<p>###常量<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> DEFAULT_INITIAL_CAPACITY = <span class="number">1</span> &lt;&lt; <span class="number">4</span>; <span class="comment">//</span></div><div class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MAXIMUM_CAPACITY = <span class="number">1</span> &lt;&lt; <span class="number">30</span>;</div><div class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">float</span> DEFAULT_LOAD_FACTOR = <span class="number">0.75f</span>;</div><div class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TREEIFY_THRESHOLD = <span class="number">8</span>;</div><div class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> UNTREEIFY_THRESHOLD = <span class="number">6</span>;</div><div class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MIN_TREEIFY_CAPACITY = <span class="number">64</span>;</div></pre></td></tr></table></figure></p><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line">static class Node&lt;K,V&gt; implements Map.Entry&lt;K,V&gt; &#123;</div><div class="line">        final int hash;</div><div class="line">        final K key;</div><div class="line">        V value;</div><div class="line">        Node&lt;K,V&gt; next;</div><div class="line"></div><div class="line">        Node(int hash, K key, V value, Node&lt;K,V&gt; next) &#123;</div><div class="line">            this.hash = hash;</div><div class="line">            this.key = key;</div><div class="line">            this.value = value;</div><div class="line">            this.next = next;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        public final K getKey()        &#123; return key; &#125;</div><div class="line">        public final V getValue()      &#123; return value; &#125;</div><div class="line">        public final String toString() &#123; return key + &quot;=&quot; + value; &#125;</div><div class="line"></div><div class="line">        public final int hashCode() &#123;</div><div class="line">            return Objects.hashCode(key) ^ Objects.hashCode(value);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        public final V setValue(V newValue) &#123;</div><div class="line">            V oldValue = value;</div><div class="line">            value = newValue;</div><div class="line">            return oldValue;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        public final boolean equals(Object o) &#123;</div><div class="line">            if (o == this)</div><div class="line">                return true;</div><div class="line">            if (o instanceof Map.Entry) &#123;</div><div class="line">                Map.Entry&lt;?,?&gt; e = (Map.Entry&lt;?,?&gt;)o;</div><div class="line">                if (Objects.equals(key, e.getKey()) &amp;&amp;</div><div class="line">                    Objects.equals(value, e.getValue()))</div><div class="line">                    return true;</div><div class="line">            &#125;</div><div class="line">            return false;</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;###常量&lt;br&gt;&lt;figure class=&quot;highlight java&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;1&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;2&lt;/div&gt;&lt;div class=&quot;
+      
+    
+    </summary>
+    
+      <category term="-源码分析" scheme="http://bryancrash.site/categories/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+    
+    
+      <category term="-JDK源码分析" scheme="http://bryancrash.site/tags/JDK%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+    
+  </entry>
   
   <entry>
     <title>论技术基础的重要性</title>

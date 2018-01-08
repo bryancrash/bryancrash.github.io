@@ -82,7 +82,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="-JDK源码分析," />
 
 
 
@@ -95,16 +95,18 @@
 
 
 
-<meta name="description" content="记录生活的点点滴滴">
-<meta property="og:type" content="website">
-<meta property="og:title" content="林距离">
-<meta property="og:url" content="http://bryancrash.site/categories/Java虚拟机/index.html">
+<meta name="description" content="###常量123456static final int DEFAULT_INITIAL_CAPACITY = 1 &amp;lt;&amp;lt; 4; //static final int MAXIMUM_CAPACITY = 1 &amp;lt;&amp;lt; 30;static final float DEFAULT_LOAD_FACTOR = 0.75f;static final int TREEIFY_THRESHO">
+<meta name="keywords" content="-JDK源码分析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HashMap源码分析">
+<meta property="og:url" content="http://bryancrash.site/2017/12/24/HashMap源码分析/index.html">
 <meta property="og:site_name" content="林距离">
-<meta property="og:description" content="记录生活的点点滴滴">
+<meta property="og:description" content="###常量123456static final int DEFAULT_INITIAL_CAPACITY = 1 &amp;lt;&amp;lt; 4; //static final int MAXIMUM_CAPACITY = 1 &amp;lt;&amp;lt; 30;static final float DEFAULT_LOAD_FACTOR = 0.75f;static final int TREEIFY_THRESHO">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2017-12-24T15:03:25.337Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="林距离">
-<meta name="twitter:description" content="记录生活的点点滴滴">
+<meta name="twitter:title" content="HashMap源码分析">
+<meta name="twitter:description" content="###常量123456static final int DEFAULT_INITIAL_CAPACITY = 1 &amp;lt;&amp;lt; 4; //static final int MAXIMUM_CAPACITY = 1 &amp;lt;&amp;lt; 30;static final float DEFAULT_LOAD_FACTOR = 0.75f;static final int TREEIFY_THRESHO">
 
 
 
@@ -134,13 +136,13 @@
 
 
 
-  <link rel="canonical" href="http://bryancrash.site/categories/Java虚拟机/"/>
+  <link rel="canonical" href="http://bryancrash.site/2017/12/24/HashMap源码分析/"/>
 
 
 
 
 
-  <title>分类: -Java虚拟机 | 林距离</title>
+  <title>HashMap源码分析 | 林距离</title>
   
 
 
@@ -159,7 +161,7 @@
     
   
 
-  <div class="container sidebar-position-left ">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 	<a href="https://github.com/bryancrash"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://camo.githubusercontent.com/567c3a48d796e2fc06ea80409cc9dd82bf714434/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_darkblue_121621.png"></a>
 
@@ -308,55 +310,278 @@
           <div id="content" class="content">
             
 
-  
-  
-  
-  <div class="post-block category">
+  <div id="posts" class="posts-expand">
+    
 
-    <div id="posts" class="posts-collapse">
-      <div class="collection-title">
-        <h1>-Java虚拟机<small>分类</small>
-        </h1>
-      </div>
+  
 
-      
-        
+  
+  
+  
 
   <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://bryancrash.site/2017/12/24/HashMap源码分析/">
 
-      <h2 class="post-title">
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="bryan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/image/bryan.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="林距离">
+    </span>
+
+    
+      <header class="post-header">
+
         
-            <a class="post-title-link" href="/2017/12/02/Java内存模型/" itemprop="url">
-              
-                <span itemprop="name">Java内存模型</span>
-              
-            </a>
         
-      </h2>
+          <h1 class="post-title" itemprop="name headline">HashMap源码分析</h1>
+        
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2017-12-02T22:24:54+08:00"
-              content="2017-12-02" >
-          12-02
-        </time>
-      </div>
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-24T21:13:38+08:00">
+                2017-12-24
+              </time>
+            
 
-    </header>
-  </article>
+            
 
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/源码分析/" itemprop="url" rel="index">
+                    <span itemprop="name">-源码分析</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-comment-o"></i>
+              </span>
+              
+                <a href="/2017/12/24/HashMap源码分析/#SOHUCS" itemprop="discussionUrl">
+                  <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2017/12/24/HashMap源码分析/" itemprop="commentsCount"></span>
+                </a>
+              
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  162
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  1
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
+      
+
+      
+        <p>###常量<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> DEFAULT_INITIAL_CAPACITY = <span class="number">1</span> &lt;&lt; <span class="number">4</span>; <span class="comment">//</span></div><div class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MAXIMUM_CAPACITY = <span class="number">1</span> &lt;&lt; <span class="number">30</span>;</div><div class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">float</span> DEFAULT_LOAD_FACTOR = <span class="number">0.75f</span>;</div><div class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TREEIFY_THRESHOLD = <span class="number">8</span>;</div><div class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> UNTREEIFY_THRESHOLD = <span class="number">6</span>;</div><div class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MIN_TREEIFY_CAPACITY = <span class="number">64</span>;</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line">static class Node&lt;K,V&gt; implements Map.Entry&lt;K,V&gt; &#123;</div><div class="line">        final int hash;</div><div class="line">        final K key;</div><div class="line">        V value;</div><div class="line">        Node&lt;K,V&gt; next;</div><div class="line"></div><div class="line">        Node(int hash, K key, V value, Node&lt;K,V&gt; next) &#123;</div><div class="line">            this.hash = hash;</div><div class="line">            this.key = key;</div><div class="line">            this.value = value;</div><div class="line">            this.next = next;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        public final K getKey()        &#123; return key; &#125;</div><div class="line">        public final V getValue()      &#123; return value; &#125;</div><div class="line">        public final String toString() &#123; return key + &quot;=&quot; + value; &#125;</div><div class="line"></div><div class="line">        public final int hashCode() &#123;</div><div class="line">            return Objects.hashCode(key) ^ Objects.hashCode(value);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        public final V setValue(V newValue) &#123;</div><div class="line">            V oldValue = value;</div><div class="line">            value = newValue;</div><div class="line">            return oldValue;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        public final boolean equals(Object o) &#123;</div><div class="line">            if (o == this)</div><div class="line">                return true;</div><div class="line">            if (o instanceof Map.Entry) &#123;</div><div class="line">                Map.Entry&lt;?,?&gt; e = (Map.Entry&lt;?,?&gt;)o;</div><div class="line">                if (Objects.equals(key, e.getKey()) &amp;&amp;</div><div class="line">                    Objects.equals(value, e.getValue()))</div><div class="line">                    return true;</div><div class="line">            &#125;</div><div class="line">            return false;</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+      
+    </div>
+    
+    
+    
+	
+	<div>
+    
+    <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+    
     </div>
 
+	<div>
+      
+        
+      
+    </div>
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>坚持原创技术分享，您的支持将鼓励我继续创作！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechat.jpg" alt="bryan 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="bryan 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    bryan
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://bryancrash.site/2017/12/24/HashMap源码分析/" title="HashMap源码分析">http://bryancrash.site/2017/12/24/HashMap源码分析/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/JDK源码分析/" rel="tag"><i class="fa fa-tag"></i> -JDK源码分析</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/02/论技术基础的重要性/" rel="next" title="论技术基础的重要性">
+                <i class="fa fa-chevron-left"></i> 论技术基础的重要性
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/01/08/用思维导图学习Java/" rel="prev" title="用思维导图学习Java">
+                用思维导图学习Java <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
   </div>
   
   
   
+  </article>
 
-  
 
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -364,6 +589,14 @@
 
 
           
+
+  
+    <div class="comments" id="comments">
+      <div id="SOHUCS"></div>
+    </div>
+
+  
+
 
 
         </div>
@@ -670,6 +903,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
 
   
 

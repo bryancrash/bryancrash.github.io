@@ -82,7 +82,7 @@
 
 
 
-  <meta name="keywords" content="-计算机基础," />
+  <meta name="keywords" content="-Java虚拟机," />
 
 
 
@@ -95,20 +95,18 @@
 
 
 
-<meta name="description" content="前言上次在给大家分享的过程中给大家提到过关于技术基础的重要性，不知道大家对这个基础知识的重视程度有多高，大家的体会可能并不深，基础知识的掌握程度其实为了长久的发展，你的技术深度以及后面解决问题的能力，如果让我再重新走一遍大学，我会用大量的时间去学习这些基础的知识，这样我在后面的工作中省下好多的时间去做别的事，学习大家要学会投资时间。最近在极客时间陈皓的专栏中谈到了如何拥有技术领导力，全篇第一部分就">
-<meta name="keywords" content="-计算机基础">
+<meta name="description" content="前言在Java虚拟机规范的描述中，除了程序计数器外，虚拟机内存的其他几个运行时区域都有发生OutOfMemoryError异常的可能，下面就通过代码在对应的区域产生OOM异常，加深对相关区域的理解，同时初步介绍一些与内存相关的虚拟机参数。 Java堆Java堆用于存储对象实例，只要不断地创建对象，并且保证GC Roots到对象之间有可达路径来避免垃圾回收机制清除这些对象，那么在对象数量到达最大堆的">
+<meta name="keywords" content="-Java虚拟机">
 <meta property="og:type" content="article">
-<meta property="og:title" content="论技术基础的重要性">
-<meta property="og:url" content="http://bryancrash.site/2017/12/02/论技术基础的重要性/index.html">
+<meta property="og:title" content="实战OutOfMemoryError">
+<meta property="og:url" content="http://bryancrash.site/2018/04/05/实战OutOfMemoryError/index.html">
 <meta property="og:site_name" content="林距离">
-<meta property="og:description" content="前言上次在给大家分享的过程中给大家提到过关于技术基础的重要性，不知道大家对这个基础知识的重视程度有多高，大家的体会可能并不深，基础知识的掌握程度其实为了长久的发展，你的技术深度以及后面解决问题的能力，如果让我再重新走一遍大学，我会用大量的时间去学习这些基础的知识，这样我在后面的工作中省下好多的时间去做别的事，学习大家要学会投资时间。最近在极客时间陈皓的专栏中谈到了如何拥有技术领导力，全篇第一部分就">
+<meta property="og:description" content="前言在Java虚拟机规范的描述中，除了程序计数器外，虚拟机内存的其他几个运行时区域都有发生OutOfMemoryError异常的可能，下面就通过代码在对应的区域产生OOM异常，加深对相关区域的理解，同时初步介绍一些与内存相关的虚拟机参数。 Java堆Java堆用于存储对象实例，只要不断地创建对象，并且保证GC Roots到对象之间有可达路径来避免垃圾回收机制清除这些对象，那么在对象数量到达最大堆的">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://p0c736231.bkt.clouddn.com/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86.png">
-<meta property="og:updated_time" content="2017-12-02T15:52:12.007Z">
+<meta property="og:updated_time" content="2018-04-05T04:42:20.411Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="论技术基础的重要性">
-<meta name="twitter:description" content="前言上次在给大家分享的过程中给大家提到过关于技术基础的重要性，不知道大家对这个基础知识的重视程度有多高，大家的体会可能并不深，基础知识的掌握程度其实为了长久的发展，你的技术深度以及后面解决问题的能力，如果让我再重新走一遍大学，我会用大量的时间去学习这些基础的知识，这样我在后面的工作中省下好多的时间去做别的事，学习大家要学会投资时间。最近在极客时间陈皓的专栏中谈到了如何拥有技术领导力，全篇第一部分就">
-<meta name="twitter:image" content="http://p0c736231.bkt.clouddn.com/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86.png">
+<meta name="twitter:title" content="实战OutOfMemoryError">
+<meta name="twitter:description" content="前言在Java虚拟机规范的描述中，除了程序计数器外，虚拟机内存的其他几个运行时区域都有发生OutOfMemoryError异常的可能，下面就通过代码在对应的区域产生OOM异常，加深对相关区域的理解，同时初步介绍一些与内存相关的虚拟机参数。 Java堆Java堆用于存储对象实例，只要不断地创建对象，并且保证GC Roots到对象之间有可达路径来避免垃圾回收机制清除这些对象，那么在对象数量到达最大堆的">
 
 
 
@@ -138,13 +136,13 @@
 
 
 
-  <link rel="canonical" href="http://bryancrash.site/2017/12/02/论技术基础的重要性/"/>
+  <link rel="canonical" href="http://bryancrash.site/2018/04/05/实战OutOfMemoryError/"/>
 
 
 
 
 
-  <title>论技术基础的重要性 | 林距离</title>
+  <title>实战OutOfMemoryError | 林距离</title>
   
 
 
@@ -326,7 +324,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://bryancrash.site/2017/12/02/论技术基础的重要性/">
+    <link itemprop="mainEntityOfPage" href="http://bryancrash.site/2018/04/05/实战OutOfMemoryError/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="bryan">
@@ -343,7 +341,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">论技术基础的重要性</h1>
+          <h1 class="post-title" itemprop="name headline">实战OutOfMemoryError</h1>
         
 
         <div class="post-meta">
@@ -355,8 +353,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-02T23:33:16+08:00">
-                2017-12-02
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-05T12:19:17+08:00">
+                2018-04-05
               </time>
             
 
@@ -378,8 +376,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/技术杂谈/" itemprop="url" rel="index">
-                    <span itemprop="name">-技术杂谈</span>
+                  <a href="/categories/Java虚拟机/" itemprop="url" rel="index">
+                    <span itemprop="name">-Java虚拟机</span>
                   </a>
                 </span>
 
@@ -397,8 +395,8 @@
                 <i class="fa fa-comment-o"></i>
               </span>
               
-                <a href="/2017/12/02/论技术基础的重要性/#SOHUCS" itemprop="discussionUrl">
-                  <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2017/12/02/论技术基础的重要性/" itemprop="commentsCount"></span>
+                <a href="/2018/04/05/实战OutOfMemoryError/#SOHUCS" itemprop="discussionUrl">
+                  <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2018/04/05/实战OutOfMemoryError/" itemprop="commentsCount"></span>
                 </a>
               
             
@@ -420,7 +418,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2,695
+                  2,147
                 </span>
               
 
@@ -457,54 +455,32 @@
       
 
       
-        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>上次在给大家分享的过程中给大家提到过关于技术基础的重要性，不知道大家对这个基础知识的重视程度有多高，大家的体会可能并不深，基础知识的掌握程度其实为了长久的发展，你的技术深度以及后面解决问题的能力，如果让我再重新走一遍大学，我会用大量的时间去学习这些基础的知识，这样我在后面的工作中省下好多的时间去做别的事，学习大家要学会投资时间。最近在极客时间陈皓的专栏中谈到了如何拥有技术领导力，全篇第一部分就用了大量的篇幅谈到了基础知识的重要性，下面我就把他对基础知识的解读分享给大家，大家完全可以按照这个计划去学习</p>
-<blockquote>
-<p>1.万丈高楼平地起。一栋楼能盖多高，一座大桥能造多长，重要的是它们的地基。同样对于技术人员来说，基础知识越扎实，走得就会越远。<br>2.计算机技术太多了，但是仔细分析你会发现，只是表现形式很多，而基础技术并不多。学好基础技术，能让你一通百通，更快地使用各种技术形式，从而可以更容易地跟上时代。<br>3.很多分布式系统架构，以及高可用、高性能、高并发的解决方案基本都可以在基础技术上找到它们的身影。所以，对基础技术的学习能让你更好地掌握更高维度的技术。<br>那么，哪些才是基础技术呢？我在下面罗列了一些。老实说，这些技术你学起来可能会感到非常枯燥无味，但是，我还是鼓励你能够克服人性的弱点，努力啃完。</p>
-</blockquote>
-<h3 id="具体来说，就是分成两个部分：系统和编程。"><a href="#具体来说，就是分成两个部分：系统和编程。" class="headerlink" title="具体来说，就是分成两个部分：系统和编程。"></a>具体来说，就是分成两个部分：系统和编程。</h3><h4 id="编程部分"><a href="#编程部分" class="headerlink" title="编程部分"></a>编程部分</h4><ul>
-<li><p>C 语言：相对于很多其他高级语言来说，C 语言更接近底层。在具备跨平台能力的前提下，它可以比较容易地被人工翻译成相应的汇编代码。它的内存管理很直接，让程序员直接和内存地址打交道。</p>
-<p>学习好 C 语言的好处是能掌握程序的运行情况，并能进行应用程序和操作系统编程（操作系统一般是汇编 +C 语言）。要学好 C 语言，可以阅读 C 语言的经典书籍《C 程序设计语言》第二版（K&amp;R），并多写程序，再读一些优秀开源项目的源代码。</p>
-</li>
-</ul>
-<p>除了让你更为了解操作系统之外，学习 C 语言还能让你更清楚地知道程序是怎么精细控制底层资源的，比如内存管理、文件操作、网络通信……</p>
-<p>这里需要说明的是，我们还是需要学习汇编语言的。因为如果你想更深入地了解计算机是怎么运作的，那么是需要了解汇编语言的。虽然我们几乎不再用汇编语言编程了，但是如果你需要写一些如 lock free 之类高并发的东西，那么了解汇编语言，能有助于你更好地理解和思考。</p>
-<ul>
-<li>编程范式：各种编程语言都有它们各自的编程范式，用于解决各种问题。比如面向对象编程（C++、Java）、泛型编程（C++、Go、C#）、函数式编程（JavaScript、 Python、Lisp、Haskell、Erlang）等。</li>
-</ul>
-<p>学习好编程范式，有助于培养编程的抽象思维，提高编程效率，提高程序的结构合理性、可读性和可维护性，降低代码的冗余度，提高代码的运行效率。要学习编程范式，可以多了解各种程序设计语言的功能特性。</p>
-<ul>
-<li>算法和数据结构：算法（及其相应的数据结构）是程序设计的有力支撑。适当地应用算法，可以有效地抽象问题，提高程序的合理性和执行效率。算法是编程中最最重要的东西，也是计算机科学中最重要的东西。</li>
-</ul>
-<p>任何有技术含量的软件中一定有高级的算法和数据结构。比如 epoll 中使用了红黑树，数据库索引使用了 B+ 树……而就算是你的业务系统中，也一定使用各种排序、过滤和查找算法。学习算法不仅是为了写出运转更为高效的代码，而且更是为了能够写出可以覆盖更多场景的正确代码。</p>
-<h4 id="系统部分"><a href="#系统部分" class="headerlink" title="系统部分"></a>系统部分</h4><ul>
-<li>计算机系统原理：CPU 的体系结构（指令集 [CISC/RISC]、分支预测、缓存结构、总线、DMA、中断、陷阱、多任务、虚拟内存、虚拟化等），内存的原理与性能特点（SRAM、DRAM、DDR-SDRAM 等），磁盘的原理（机械硬盘 [盘面、磁头臂、磁头、启停区、寻道等]、固态硬盘 [页映射、块的合并与回收算法、TRIM 指令等]），GPU 的原理等。</li>
-</ul>
-<p>学习计算机系统原理的价值在于，除了能够了解计算机的原理之外，你还能举一反三地反推出高维度的分布式架构和高并发高可用的架构设计。</p>
-<p>比如：虚拟化内存就和今天云计算中的虚拟化的原理是相通的，计算机总线和分布式架构中的 ESB 也有相通之处，计算机指令调度、并发控制可以让你更好地理解并发编程和做程序性能调优……这里，推荐书籍《深入理解计算机系统》（Randal E. Bryant）。</p>
-<ul>
-<li>操作系统原理和基础：进程、进程管理、线程、线程调度、多核的缓存一致性、信号量、物理内存管理、虚拟内存管理、内存分配、文件系统、磁盘管理等。</li>
-</ul>
-<p>学习操作系统的价值在于理解程序是怎样被管理的，操作系统对应用程序提供了怎样的支持，抽象出怎样的编程接口（比如 POSIX/Win32 API），性能特性如何（比如控制合理的上下文切换次数），怎样进行进程间通信（如管道、套接字、内存映射等），以便让不同的软件配合一起运行等。</p>
-<p>要学习操作系统知识，一是仔细观察和探索当前使用的操作系统，二是阅读讲操作系统原理的图书，三是阅读 API 文档（如 man pages 和 MSDN Library），并编写调用操作系统功能的程序。这里推荐三本书《UNIX 高级环境编程》、《UNIX 网络编程》和《Windows 核心编程》。</p>
-<p>学习操作系统基础原理的好处是，这是所有程序运行的物理世界，无论上层是像 C/C++ 这样编译成机器码的语言，还是像 Java 这样有 JVM 做中间层的语言，还是像 Python/PHP/Perl/Node.js 这样直接在运行时解释的语言，其在底层都逃离不了操作系统这个物理世界的“物理定律”。</p>
-<p>所以，了解操作系统的原理，可以让你更能本质地理解各种语言或是技术的底层原理。一眼看透本质将让你更容易地掌握和使用高阶技术。</p>
-<ul>
-<li>网络基础：计算机网络是现代计算机不可或缺的一部分。需要了解基本的网络层次结构（ISO/OSI 模型、TCP/IP 协议栈），包括物理层、数据链路层（包含错误重发机制）、网络层（包含路由机制）、传输层（包含连接保持机制）、会话层、表示层、应用层（在 TCP/IP 协议栈里，这三层可以并为一层）。</li>
-</ul>
-<p>比如，底层的 ARP 协议、中间的 TCP/UDP 协议，以及高层的 HTTP 协议。这里推荐书籍《TCP/IP 详解》，学习这些基础的网络协议，可以为我们的高维分布式架构中的一些技术问题提供很多的技术方案。比如：TCP 的滑动窗口限流，完全可以用于分布式服务中的限流方案。</p>
-<ul>
-<li>数据库原理：数据库管理系统是管理数据库的利器。通常操作系统提供文件系统来管理文件数据，而文件比较适合保存连续的信息，如一篇文章、一个图片等。但有时需要保存一个名字等较短的信息。如果单个文件只保存名字这样的几个字节的信息的话，会浪费大量的磁盘空间，而且无法方便地查询（除非使用索引服务）。</li>
-</ul>
-<p>但数据库则更适合保存这种短的数据，而且可以方便地按字段进行查询。现代流行的数据库管理系统有两大类：SQL（基于 B+ 树，强一致性）和 NoSQL（较弱的一致性，较高的存取效率，基于哈希表或其他技术）。</p>
-<p>学习了数据库原理之后更能了解数据库访问性能调优的要点，以及保证并发情况下数据操作原子性的方法。要学习数据库，可以阅读各类数据库图书，并多做数据库操作以及数据库编程，多观察分析数据库在运行时的性能。</p>
-<ul>
-<li>分布式技术架构：数据库和应用程序服务器在应对互联网上数以亿计的访问量的时候，需要能进行横向扩展，才能提供足够的性能。为了做到这一点，要学习分布式技术架构，包括负载均衡、DNS 解析、多子域名、无状态应用层、缓存层、数据库分片、容错和恢复机制、Paxos、Map/Reduce 操作、分布式 SQL 数据库一致性（以 Google Cloud Spanner 为代表）等知识点。</li>
-</ul>
-<p>学习分布式技术架构的有效途径是参与到分布式项目的开发中去，并阅读相关论文。</p>
-<blockquote>
-<p>注意，上面这些基础知识通常不是可以速成的。虽然说，你可以在一两年内看完相关的书籍或论文，但是，我想说的是，这些基础技术是需要你用一生的时间来学习的，因为基础上的技术和知识，会随着阅历和经验的增加而有不同的感悟。</p>
-</blockquote>
-<h3 id="以下是我对这些基础知识整理的思维导图，可能看的更清晰一点"><a href="#以下是我对这些基础知识整理的思维导图，可能看的更清晰一点" class="headerlink" title="以下是我对这些基础知识整理的思维导图，可能看的更清晰一点"></a>以下是我对这些基础知识整理的思维导图，可能看的更清晰一点</h3><p><img src="http://p0c736231.bkt.clouddn.com/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86.png" alt=""></p>
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>在Java虚拟机规范的描述中，除了程序计数器外，虚拟机内存的其他几个运行时区域都有发生OutOfMemoryError异常的可能，下面就通过代码在对应的区域产生OOM异常，加深对相关区域的理解，同时初步介绍一些与内存相关的虚拟机参数。</p>
+<h3 id="Java堆"><a href="#Java堆" class="headerlink" title="Java堆"></a>Java堆</h3><p>Java堆用于存储对象实例，只要不断地创建对象，并且保证GC Roots到对象之间有可达路径来避免垃圾回收机制清除这些对象，那么在对象数量到达最大堆的容量限制后就会产生内存溢出异常。在实例中限制Java堆的大小为20MB，不可扩展（将堆的最小值-Xms参数与最大值-Xmx参数设置为一样即可避免堆自动扩展），通过参数-XX:+HeapDumpOnOfMemoryError可以让虚拟机在出现内存溢出异常时Dump出当前的内存堆转储快照以便事后进行分析</p>
+<p>代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"></div><div class="line"> * VM Args：-Xms20m -Xmx20m -XX:+HeapDumpOnOutOfMemoryError</div><div class="line"></div><div class="line"> * @author bryan</div><div class="line"></div><div class="line"> */</div><div class="line"></div><div class="line">public class HeapOOM &#123;</div><div class="line"></div><div class="line"> </div><div class="line"></div><div class="line">​       static class OOMObject &#123;</div><div class="line"></div><div class="line">​       &#125;</div><div class="line"></div><div class="line"> </div><div class="line"></div><div class="line">​       public static void main(String[] args) &#123;</div><div class="line"></div><div class="line">​              List&lt;OOMObject&gt; list = new ArrayList&lt;OOMObject&gt;();</div><div class="line"></div><div class="line"> </div><div class="line"></div><div class="line">​              while (true) &#123;</div><div class="line"></div><div class="line">​                     list.add(new OOMObject());</div><div class="line"></div><div class="line">​              &#125;</div><div class="line"></div><div class="line">​       &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>运行结果为<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">java.lang.OutOfMemoryError: Java heap space</div><div class="line"></div><div class="line">Dumping heap to java_pid5556.hprof ...</div><div class="line"></div><div class="line">Heap dump file created [28313503 bytes in 0.167 secs]</div></pre></td></tr></table></figure></p>
+<p>要解决这个区域的异常，一般的手段是先通过内存映像分析工具对Dump出来的堆转储快照进行分析，重点是确认内存中的对象是否必要的，也就是要先分析清楚到底是出现了内存泄漏还是内存溢出</p>
+<p>如果是内存泄漏，可进一步通过工具查看泄漏对象到GC Roots的引用链，于是就能找到泄漏对象是通过怎么的路径与GC Roots相关联并导致垃圾收集器无法自动回收它们的；如果不存在泄漏，就应当检查虚拟机的堆参数（-Xmx与-Xms），与机器物理内存对比看是否还可以调大，从代码上检查是否存在某些对象生命周期过长，持有状态时间过长的情况，尝试减少程序运行期的内存消耗</p>
+<h3 id="虚拟机栈和本地方法栈溢出"><a href="#虚拟机栈和本地方法栈溢出" class="headerlink" title="虚拟机栈和本地方法栈溢出"></a>虚拟机栈和本地方法栈溢出</h3><p>由于在HotSpot虚拟机中并不区分虚拟机栈和本地方法栈，因此，对于HotSpot来说，虽然-Xoss参数存在，但实际上是无效的，栈容量只由-Xss参数设定，关于虚拟机栈和本地方法栈，在Java虚拟机规范中描述了两种异常：</p>
+<p>如果线程请求的栈深度大于虚拟机所允许的最大深度，将抛出StackOverflowError异常</p>
+<p>如果虚拟机在扩展栈时无法申请到足够的内存空间，则抛出OutOfMemoryError异常</p>
+<p>1.使用-Xss参数削减栈内存容量。结果：抛出SOF异常时的堆栈深度相应缩小。</p>
+<p>2.定义大量的本地变量，增大此方法对应帧的长度。结果：抛出SOF异常时的堆栈深度相应缩小。</p>
+<p>3.创建几个定义很多本地变量的复杂对象，打开逃逸分析和标量替换选项，使得JIT编译器允许对象拆分后在栈中分配。结果：实际效果同第二点</p>
+<p>代码：虚拟机栈和本地方法栈OOM测试</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"></div><div class="line"> * VM Args：-Xss128k</div><div class="line"></div><div class="line"> * @author bryan</div><div class="line"></div><div class="line"> */</div><div class="line"></div><div class="line">public class JavaVMStackSOF &#123;</div><div class="line"></div><div class="line">​    private int stackLength = 1;</div><div class="line"></div><div class="line">​    public void stackLeak()&#123;</div><div class="line"></div><div class="line">​        stackLength++;</div><div class="line"></div><div class="line">​        stackLeak();</div><div class="line"></div><div class="line">​    &#125;</div><div class="line"></div><div class="line">​    public static void main(String[] args) throws Throwable&#123;</div><div class="line"></div><div class="line">​        JavaVMStackSOF oom = new JavaVMStackSOF();</div><div class="line"></div><div class="line">​        try&#123;</div><div class="line"></div><div class="line">​            oom.stackLeak();</div><div class="line"></div><div class="line">​        &#125;catch (Throwable e)&#123;</div><div class="line"></div><div class="line">​            System.out.println(&quot;stack length:&quot;+oom.stackLength);</div><div class="line"></div><div class="line">​            throw e;</div><div class="line"></div><div class="line">​        &#125;</div><div class="line"></div><div class="line">​    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>运行结果：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">stack length:999</div><div class="line"></div><div class="line">Exception in thread &quot;main&quot; java.lang.StackOverflowError</div><div class="line"></div><div class="line">​	at JVMCode.chaoter2.JavaVMStackSOF.stackLeak(JavaVMStackSOF.java:10)</div><div class="line"></div><div class="line">​	at JVMCode.chaoter2.JavaVMStackSOF.stackLeak(JavaVMStackSOF.java:11)</div><div class="line"></div><div class="line">​	at JVMCode.chaoter2.JavaVMStackSOF.stackLeak(JavaVMStackSOF.java:11)</div><div class="line"></div><div class="line">​	at JVMCode.chaoter2.JavaVMStackSOF.stackLeak(JavaVMStackSOF.java:11)</div><div class="line"></div><div class="line">​        .................</div></pre></td></tr></table></figure></p>
+<p>但是这样产生的内存溢出异常与栈空间是否足够大并不存在任何联系，或者准确地说，在这种情况下，为每个线程的栈分配的内存越大，反而越容易产生内存溢出异常。原因不难理解，虚拟机提供了参数来控制Java堆和方法区的这两部分内存最大值，，剩余的内存为2GB（操作系统限制）减去Xmx（最大堆容量），再减去MaxPermSize(最大方法区容量)，程序计数器消耗内存很小，可以忽略不计，如果虚拟机进程本身耗费的内存不计算在内，剩下的内存就由虚拟机栈和本地方法栈“瓜分”了。每个线程分配到的栈容量越大，可以建立的线程数量自然就越少，建立线程时就越容易把剩下的内存耗尽。但是，如果是建立过多线程导致的内存溢出，在不能减少线程数或者更换64位虚拟机的情况下，就只能通过减少最大堆和减少栈容量来换取更多的线程。如果没有这方面的处理经验，这种通过“减少内存”的手段来解决内存溢出的方式会比较难以想到</p>
+<p>创建线程导致内存溢出异常代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"></div><div class="line"> \* VM Args:-Xss2M</div><div class="line"></div><div class="line"> */</div><div class="line"></div><div class="line">public class JavaVMStackOOM &#123;</div><div class="line"></div><div class="line">​    private void dontStop()&#123;</div><div class="line"></div><div class="line">​        while(true)&#123;</div><div class="line"></div><div class="line">​        &#125;</div><div class="line"></div><div class="line">​    &#125;</div><div class="line"></div><div class="line">​    public void stackLeakByThread()&#123;</div><div class="line"></div><div class="line">​        while(true)&#123;</div><div class="line"></div><div class="line">​            Thread thread = new Thread(new Runnable() &#123;</div><div class="line"></div><div class="line">​                @Override</div><div class="line"></div><div class="line">​                public void run() &#123;</div><div class="line"></div><div class="line">​                    dontStop();</div><div class="line"></div><div class="line">​                &#125;</div><div class="line"></div><div class="line">​            &#125;);</div><div class="line"></div><div class="line">​            thread.start();</div><div class="line"></div><div class="line">​        &#125;</div><div class="line"></div><div class="line">​    &#125;</div><div class="line"></div><div class="line">​    public static void main(String[] args)&#123;</div><div class="line"></div><div class="line">​        JavaVMStackOOM oom = new JavaVMStackOOM();</div><div class="line"></div><div class="line">​        oom.stackLeakByThread();</div><div class="line"></div><div class="line">​    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="方法区和运行时常量池溢出"><a href="#方法区和运行时常量池溢出" class="headerlink" title="方法区和运行时常量池溢出"></a>方法区和运行时常量池溢出</h3><p>运行时常量是方法区的一部分，所以对运行时常量的测试就是对方法区的测试。String.intern()是一个Native方法，它的作用是：如果字符串常量池已经包含一个等于此String对象的字符串，则返回代表池中这个字符串的String对象；否则，将此String对象包含的字符串添加到常量池中，并且返回此String对象的引用。我们只需要通过-XX:PermSize和-XX:MaxPermSize限制方法区大小即可限制常量池容量。实现代码如下：</p>
+<p>清单4：运行时常量池导致的OOM异常<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"></div><div class="line"> * VM Args：-XX:PermSize=10M -XX:MaxPermSize=10M</div><div class="line"></div><div class="line"> * @author bryan</div><div class="line"></div><div class="line"> */</div><div class="line"></div><div class="line">public class RuntimeConstantPoolOOM &#123;</div><div class="line"></div><div class="line"> </div><div class="line"></div><div class="line">​       public static void main(String[] args) &#123;</div><div class="line"></div><div class="line">​              // 使用List保持着常量池引用，压制Full GC回收常量池行为</div><div class="line"></div><div class="line">​              List&lt;String&gt; list = new ArrayList&lt;String&gt;();</div><div class="line"></div><div class="line">​              // 10M的PermSize在integer范围内足够产生OOM了</div><div class="line"></div><div class="line">​              int i = 0;</div><div class="line"></div><div class="line">​              while (true) &#123;</div><div class="line"></div><div class="line">​                     list.add(String.valueOf(i++).intern());</div><div class="line"></div><div class="line">​              &#125;</div><div class="line"></div><div class="line">​       &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3><p>上文讲过，方法区用于存放Class相关信息，所以这个区域的测试我们借助CGLib直接操作字节码动态生成大量的Class，值得注意的是，这里我们这个例子中模拟的场景其实经常会在实际应用中出现：当前很多主流框架，如Spring、Hibernate对类进行增强时，都会使用到CGLib这类字节码技术，当增强的类越多，就需要越大的方法区用于保证动态生成的Class可以加载入内存。</p>
+<p>清单5：借助CGLib使得方法区出现OOM异常<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"></div><div class="line"> * VM Args： -XX:PermSize=10M -XX:MaxPermSize=10M</div><div class="line"></div><div class="line"> * @author bryan</div><div class="line"></div><div class="line"> */</div><div class="line"></div><div class="line">public class JavaMethodAreaOOM &#123;</div><div class="line"></div><div class="line"> </div><div class="line"></div><div class="line">​       public static void main(String[] args) &#123;</div><div class="line"></div><div class="line">​              while (true) &#123;</div><div class="line"></div><div class="line">​                     Enhancer enhancer = new Enhancer();</div><div class="line"></div><div class="line">​                     enhancer.setSuperclass(OOMObject.class);</div><div class="line"></div><div class="line">​                     enhancer.setUseCache(false);</div><div class="line"></div><div class="line">​                     enhancer.setCallback(new MethodInterceptor() &#123;</div><div class="line"></div><div class="line">​                            public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable &#123;</div><div class="line"></div><div class="line">​                                   return proxy.invokeSuper(obj, args);</div><div class="line"></div><div class="line">​                            &#125;</div><div class="line"></div><div class="line">​                     &#125;);</div><div class="line"></div><div class="line">​                     enhancer.create();</div><div class="line"></div><div class="line">​              &#125;</div><div class="line"></div><div class="line">​       &#125;</div><div class="line"></div><div class="line"> </div><div class="line"></div><div class="line">​       static class OOMObject &#123;</div><div class="line"></div><div class="line"> </div><div class="line"></div><div class="line">​       &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>运行结果：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">Caused by: java.lang.OutOfMemoryError: PermGen space</div><div class="line"></div><div class="line">​       at java.lang.ClassLoader.defineClass1(Native Method)</div><div class="line"></div><div class="line">​       at java.lang.ClassLoader.defineClassCond(ClassLoader.java:632)</div><div class="line"></div><div class="line">​       at java.lang.ClassLoader.defineClass(ClassLoader.java:616)</div><div class="line"></div><div class="line">​       ... 8 more</div></pre></td></tr></table></figure></p>
+<h3 id="本机直接内存溢出"><a href="#本机直接内存溢出" class="headerlink" title="本机直接内存溢出"></a>本机直接内存溢出</h3><p>DirectMemory容量可通过-XX:MaxDirectMemorySize指定，不指定的话默认与Java堆（-Xmx指定）一样，下文代码越过了DirectByteBuffer，直接通过反射获取Unsafe实例进行内存分配（Unsafe类的getUnsafe()方法限制了只有引导类加载器才会返回实例，也就是基本上只有rt.jar里面的类的才能使用），因为DirectByteBuffer也会抛OOM异常，但抛出异常时实际上并没有真正向操作系统申请分配内存，而是通过计算得知无法分配既会抛出，真正申请分配的方法是unsafe.allocateMemory()。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"></div><div class="line"> \* VM Args:-Xmx20M -XX:MaxDirectMemorySize=10M</div><div class="line"></div><div class="line"> */</div><div class="line"></div><div class="line">public class DirectMemoryOOM &#123;</div><div class="line"></div><div class="line">​    private static final int _1MB = 1024*1024;</div><div class="line"></div><div class="line">​    public static void main(String[] args) throws Exception&#123;</div><div class="line"></div><div class="line">​        Field unsafeField = Unsafe.class.getDeclaredFields()[0];</div><div class="line"></div><div class="line">​        unsafeField.setAccessible(true);</div><div class="line"></div><div class="line">​        Unsafe unsafe = (Unsafe)unsafeField.get(null);</div><div class="line"></div><div class="line">​        while(true)&#123;</div><div class="line"></div><div class="line">​            unsafe.allocateMemory(_1MB);</div><div class="line"></div><div class="line">​        &#125;</div><div class="line"></div><div class="line">​    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>运行结果<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Exception in thread &quot;main&quot; java.lang.OutOfMemoryError</div><div class="line"></div><div class="line">​	at sun.misc.Unsafe.allocateMemory(Native Method)</div><div class="line"></div><div class="line">​	at JVMCode.chapter2.DirectMemoryOOM.main(DirectMemoryOOM.java:17)</div></pre></td></tr></table></figure></p>
+<p>由于DirectMemory导致的内存溢出，一个明显的特征是在Heap Dump文件中不会看见明显的异常，如果读者发现OOM之后Dump文件很小，而程序中又直接或间接使用了NIO，那就可以考虑检查一下是不是这方面的原因</p>
 
       
     </div>
@@ -570,7 +546,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="http://bryancrash.site/2017/12/02/论技术基础的重要性/" title="论技术基础的重要性">http://bryancrash.site/2017/12/02/论技术基础的重要性/</a>
+    <a href="http://bryancrash.site/2018/04/05/实战OutOfMemoryError/" title="实战OutOfMemoryError">http://bryancrash.site/2018/04/05/实战OutOfMemoryError/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>
@@ -585,7 +561,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/计算机基础/" rel="tag"><i class="fa fa-tag"></i> -计算机基础</a>
+            <a href="/tags/Java虚拟机/" rel="tag"><i class="fa fa-tag"></i> -Java虚拟机</a>
           
         </div>
       
@@ -598,8 +574,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/12/02/Java内存模型/" rel="next" title="Java内存模型">
-                <i class="fa fa-chevron-left"></i> Java内存模型
+              <a href="/2018/04/05/HotSpot虚拟机对象/" rel="next" title="HotSpot虚拟机对象">
+                <i class="fa fa-chevron-left"></i> HotSpot虚拟机对象
               </a>
             
           </div>
@@ -608,8 +584,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2017/12/24/HashMap源码分析/" rel="prev" title="HashMap源码分析">
-                HashMap源码分析 <i class="fa fa-chevron-right"></i>
+              <a href="/2018/04/05/垃圾收集器/" rel="prev" title="垃圾收集器">
+                垃圾收集器 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -809,7 +785,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#具体来说，就是分成两个部分：系统和编程。"><span class="nav-number">2.</span> <span class="nav-text">具体来说，就是分成两个部分：系统和编程。</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#编程部分"><span class="nav-number">2.1.</span> <span class="nav-text">编程部分</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#系统部分"><span class="nav-number">2.2.</span> <span class="nav-text">系统部分</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#以下是我对这些基础知识整理的思维导图，可能看的更清晰一点"><span class="nav-number">3.</span> <span class="nav-text">以下是我对这些基础知识整理的思维导图，可能看的更清晰一点</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Java堆"><span class="nav-number">2.</span> <span class="nav-text">Java堆</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#虚拟机栈和本地方法栈溢出"><span class="nav-number">3.</span> <span class="nav-text">虚拟机栈和本地方法栈溢出</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方法区和运行时常量池溢出"><span class="nav-number">4.</span> <span class="nav-text">方法区和运行时常量池溢出</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方法区"><span class="nav-number">5.</span> <span class="nav-text">方法区</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#本机直接内存溢出"><span class="nav-number">6.</span> <span class="nav-text">本机直接内存溢出</span></a></li></ol></div>
             
 
           </div>

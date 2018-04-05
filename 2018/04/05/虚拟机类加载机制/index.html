@@ -82,7 +82,7 @@
 
 
 
-  <meta name="keywords" content="-计算机基础," />
+  <meta name="keywords" content="-Java虚拟机," />
 
 
 
@@ -95,20 +95,18 @@
 
 
 
-<meta name="description" content="前言上次在给大家分享的过程中给大家提到过关于技术基础的重要性，不知道大家对这个基础知识的重视程度有多高，大家的体会可能并不深，基础知识的掌握程度其实为了长久的发展，你的技术深度以及后面解决问题的能力，如果让我再重新走一遍大学，我会用大量的时间去学习这些基础的知识，这样我在后面的工作中省下好多的时间去做别的事，学习大家要学会投资时间。最近在极客时间陈皓的专栏中谈到了如何拥有技术领导力，全篇第一部分就">
-<meta name="keywords" content="-计算机基础">
+<meta name="description" content="类加载的时机类从被加载到虚拟机内存中开始，到卸载出内存为止，它的整个生命周期包括：加载，验证，准备，解析，初始化，使用的卸载7个过程，其中验证，准备，解析3个部分统称为连接.对于初始化阶段，虚拟机规范则是严格规定了有且仅有5种情况必须立即对类进行“初始化”：  遇到new、getstatic、putstatic、或invokestatic这4个字节码指令时，如果类没有进行过初始化，则需要先触发其初">
+<meta name="keywords" content="-Java虚拟机">
 <meta property="og:type" content="article">
-<meta property="og:title" content="论技术基础的重要性">
-<meta property="og:url" content="http://bryancrash.site/2017/12/02/论技术基础的重要性/index.html">
+<meta property="og:title" content="虚拟机类加载机制">
+<meta property="og:url" content="http://bryancrash.site/2018/04/05/虚拟机类加载机制/index.html">
 <meta property="og:site_name" content="林距离">
-<meta property="og:description" content="前言上次在给大家分享的过程中给大家提到过关于技术基础的重要性，不知道大家对这个基础知识的重视程度有多高，大家的体会可能并不深，基础知识的掌握程度其实为了长久的发展，你的技术深度以及后面解决问题的能力，如果让我再重新走一遍大学，我会用大量的时间去学习这些基础的知识，这样我在后面的工作中省下好多的时间去做别的事，学习大家要学会投资时间。最近在极客时间陈皓的专栏中谈到了如何拥有技术领导力，全篇第一部分就">
+<meta property="og:description" content="类加载的时机类从被加载到虚拟机内存中开始，到卸载出内存为止，它的整个生命周期包括：加载，验证，准备，解析，初始化，使用的卸载7个过程，其中验证，准备，解析3个部分统称为连接.对于初始化阶段，虚拟机规范则是严格规定了有且仅有5种情况必须立即对类进行“初始化”：  遇到new、getstatic、putstatic、或invokestatic这4个字节码指令时，如果类没有进行过初始化，则需要先触发其初">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://p0c736231.bkt.clouddn.com/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86.png">
-<meta property="og:updated_time" content="2017-12-02T15:52:12.007Z">
+<meta property="og:updated_time" content="2018-04-05T05:59:01.036Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="论技术基础的重要性">
-<meta name="twitter:description" content="前言上次在给大家分享的过程中给大家提到过关于技术基础的重要性，不知道大家对这个基础知识的重视程度有多高，大家的体会可能并不深，基础知识的掌握程度其实为了长久的发展，你的技术深度以及后面解决问题的能力，如果让我再重新走一遍大学，我会用大量的时间去学习这些基础的知识，这样我在后面的工作中省下好多的时间去做别的事，学习大家要学会投资时间。最近在极客时间陈皓的专栏中谈到了如何拥有技术领导力，全篇第一部分就">
-<meta name="twitter:image" content="http://p0c736231.bkt.clouddn.com/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86.png">
+<meta name="twitter:title" content="虚拟机类加载机制">
+<meta name="twitter:description" content="类加载的时机类从被加载到虚拟机内存中开始，到卸载出内存为止，它的整个生命周期包括：加载，验证，准备，解析，初始化，使用的卸载7个过程，其中验证，准备，解析3个部分统称为连接.对于初始化阶段，虚拟机规范则是严格规定了有且仅有5种情况必须立即对类进行“初始化”：  遇到new、getstatic、putstatic、或invokestatic这4个字节码指令时，如果类没有进行过初始化，则需要先触发其初">
 
 
 
@@ -138,13 +136,13 @@
 
 
 
-  <link rel="canonical" href="http://bryancrash.site/2017/12/02/论技术基础的重要性/"/>
+  <link rel="canonical" href="http://bryancrash.site/2018/04/05/虚拟机类加载机制/"/>
 
 
 
 
 
-  <title>论技术基础的重要性 | 林距离</title>
+  <title>虚拟机类加载机制 | 林距离</title>
   
 
 
@@ -326,7 +324,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://bryancrash.site/2017/12/02/论技术基础的重要性/">
+    <link itemprop="mainEntityOfPage" href="http://bryancrash.site/2018/04/05/虚拟机类加载机制/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="bryan">
@@ -343,7 +341,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">论技术基础的重要性</h1>
+          <h1 class="post-title" itemprop="name headline">虚拟机类加载机制</h1>
         
 
         <div class="post-meta">
@@ -355,8 +353,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-02T23:33:16+08:00">
-                2017-12-02
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-05T12:22:11+08:00">
+                2018-04-05
               </time>
             
 
@@ -378,8 +376,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/技术杂谈/" itemprop="url" rel="index">
-                    <span itemprop="name">-技术杂谈</span>
+                  <a href="/categories/Java虚拟机/" itemprop="url" rel="index">
+                    <span itemprop="name">-Java虚拟机</span>
                   </a>
                 </span>
 
@@ -397,8 +395,8 @@
                 <i class="fa fa-comment-o"></i>
               </span>
               
-                <a href="/2017/12/02/论技术基础的重要性/#SOHUCS" itemprop="discussionUrl">
-                  <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2017/12/02/论技术基础的重要性/" itemprop="commentsCount"></span>
+                <a href="/2018/04/05/虚拟机类加载机制/#SOHUCS" itemprop="discussionUrl">
+                  <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2018/04/05/虚拟机类加载机制/" itemprop="commentsCount"></span>
                 </a>
               
             
@@ -420,7 +418,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2,695
+                  5,260
                 </span>
               
 
@@ -436,7 +434,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  9
+                  18
                 </span>
               
             </div>
@@ -457,54 +455,97 @@
       
 
       
-        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>上次在给大家分享的过程中给大家提到过关于技术基础的重要性，不知道大家对这个基础知识的重视程度有多高，大家的体会可能并不深，基础知识的掌握程度其实为了长久的发展，你的技术深度以及后面解决问题的能力，如果让我再重新走一遍大学，我会用大量的时间去学习这些基础的知识，这样我在后面的工作中省下好多的时间去做别的事，学习大家要学会投资时间。最近在极客时间陈皓的专栏中谈到了如何拥有技术领导力，全篇第一部分就用了大量的篇幅谈到了基础知识的重要性，下面我就把他对基础知识的解读分享给大家，大家完全可以按照这个计划去学习</p>
-<blockquote>
-<p>1.万丈高楼平地起。一栋楼能盖多高，一座大桥能造多长，重要的是它们的地基。同样对于技术人员来说，基础知识越扎实，走得就会越远。<br>2.计算机技术太多了，但是仔细分析你会发现，只是表现形式很多，而基础技术并不多。学好基础技术，能让你一通百通，更快地使用各种技术形式，从而可以更容易地跟上时代。<br>3.很多分布式系统架构，以及高可用、高性能、高并发的解决方案基本都可以在基础技术上找到它们的身影。所以，对基础技术的学习能让你更好地掌握更高维度的技术。<br>那么，哪些才是基础技术呢？我在下面罗列了一些。老实说，这些技术你学起来可能会感到非常枯燥无味，但是，我还是鼓励你能够克服人性的弱点，努力啃完。</p>
-</blockquote>
-<h3 id="具体来说，就是分成两个部分：系统和编程。"><a href="#具体来说，就是分成两个部分：系统和编程。" class="headerlink" title="具体来说，就是分成两个部分：系统和编程。"></a>具体来说，就是分成两个部分：系统和编程。</h3><h4 id="编程部分"><a href="#编程部分" class="headerlink" title="编程部分"></a>编程部分</h4><ul>
-<li><p>C 语言：相对于很多其他高级语言来说，C 语言更接近底层。在具备跨平台能力的前提下，它可以比较容易地被人工翻译成相应的汇编代码。它的内存管理很直接，让程序员直接和内存地址打交道。</p>
-<p>学习好 C 语言的好处是能掌握程序的运行情况，并能进行应用程序和操作系统编程（操作系统一般是汇编 +C 语言）。要学好 C 语言，可以阅读 C 语言的经典书籍《C 程序设计语言》第二版（K&amp;R），并多写程序，再读一些优秀开源项目的源代码。</p>
+        <h4 id="类加载的时机"><a href="#类加载的时机" class="headerlink" title="类加载的时机"></a>类加载的时机</h4><p>类从被加载到虚拟机内存中开始，到卸载出内存为止，它的整个生命周期包括：加载，验证，准备，解析，初始化，使用的卸载7个过程，其中验证，准备，解析3个部分统称为连接.<br>对于初始化阶段，虚拟机规范则是严格规定了有且仅有5种情况必须立即对类进行“初始化”：</p>
+<ol>
+<li>遇到new、getstatic、putstatic、或invokestatic这4个字节码指令时，如果类没有进行过初始化，则需要先触发其初始化。生成这4跳指令的最常见的Java代码场景是：使用new关键字实例化对象的时候、读取或设置一个类的关键字段（被final修饰、已在编译期把结果放入常量池的静态字段除外）的时候，以及调用一个类的静态方法的时候</li>
+<li>使用java.lang.reflect包的方法对类进行反射调用的时候，如果类没有进行过初始化，则需要先触发其初始化</li>
+<li>当初始化一个类的时候，如果发现其父类还没有进行过初始化，则需要先触发其父类的初始化</li>
+<li>当虚拟机启动时，用户需要指定一个要执行的主类，虚拟机会先初始化这个主类</li>
+<li>当使用jdk1.7的动态语言支持时，如果一个java.lang.invoke.MethodHandle实例最后的解析结果REF_getStatic、REF_invokestatic的方法句柄，并且这个方法句柄所对应的类没有进行过初始化，则需要先触发其初始化</li>
+</ol>
+<p>有且仅有这5种场景种的行为称为对一个类进行主动引用，除此之外，所有引用类的方法都不会触发初始化，称为被动引用</p>
+<h4 id="类加载的过程"><a href="#类加载的过程" class="headerlink" title="类加载的过程"></a>类加载的过程</h4><h5 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h5><p>加载” 是 “类加载”（Class Loading）过程的一个阶段，希望读者没有混淆这两个看起来很相似的名词。在加载阶段，虚拟机需要完成以下 3 件事情：</p>
+<ol>
+<li>通过一个类的全限定名来获取定义此类的二进制字节流。</li>
+<li>将这个字节流所代表的静态存储结构转换为方法区的运行时数据结构</li>
+<li>在内存中生成一个代表这个类的 java.lang.Class 对象，作为方法区这个类的各种数据的访问入口。</li>
+</ol>
+<p>虚拟机规范的这 3 点要求其实并不算具体，因此虚拟机实现与具体应用的灵活度都是相当大的。例如 “通过一个类的全限定名来获取定义此类的二进制字节流” 这条，它没有指明二进制字节流要从一个 Class 文件中获取，准确地说是根本没有指明要从哪里获取、怎样获取。虚拟机设计团队在加载阶段搭建了一个相当开放的、广阔的 “舞台”，Java 发展历程中，充满创造力的开发人员则再这个 “舞台” 上玩出了各种花样，许多举足轻重的 Java 技术都建立在这一基础之上，例如：</p>
+<ol>
+<li>从 ZIP 包中读取，这很常见，最终成为日后 JAR、EAR、WAR 格式的基础。</li>
+<li>从网络中获取，这种常见最典型的应用就是 Applet。</li>
+<li>运行时计算生成，这种常见使用得最多的就是动态代理技术，在 java.lang.reflect.Proxy 中，就是用了 ProxyGenerator.generateProxyClass 来为特定接口生成形式为 “*$Proxy” 的代理类的二进制字节流。</li>
+<li>由其他文件生成，典型场景是 JSP 应用，即由 JSP 文件生成对应的 Class 类。</li>
+<li>从数据库中读取，这种场景相对少见些，例如有些中间件服务器（如 SAP Netweaver）可以选择把程序安装到数据库中来完成程序代码在集群间的分发。</li>
+</ol>
+<p>相对于类加载过程的其他阶段，一个非数组类的加载阶段（准确地说，是加载阶段中获取类的二进制字节流的动作）是开发人员可控性最强的，因为加载阶段既可以使用系统提供的引导类加载器来完成，也可以由用户自定义的类加载器去完成，开发人员可以通过定义自己的类加载器去控制字节流的获取方式（即重写一个类加载器的loadClass() 方法）。</p>
+<p>对于数组类而言，情况就有所不同，数组类本身不通过类加载器创建，它是由 Java 虚拟机直接创建的。但数组类与类加载器仍然有很密切的关系，因为数组类的元素类型（Element Type，指的是数组去掉所有纬度的类型）最终是要考类加载器去创建，一个数组类（下面简称为 C）创建过程要遵循以下规则：</p>
+<ol>
+<li>如果数组的组件类型（Component Type，指的是数组去掉一个纬度的类型）是引用类型，那就递归采用本节中定义的加载过程去加载这个组件类型，数组 C 将在加载该组件类型的类加载器的类名称空间上被标识（这点很重要，一个类必须与类加载器一起确定唯一性）。</li>
+<li>如果数组的组件类型不是引用类型（例如 int[] 数组），Java 虚拟机将会把数组 C 标记为与引导类加载器关联。</li>
+<li>数组类的可见性与它的组件类型的可见性一直，如果组件类型不是引用类型，那数组类的可见性将默认为 public。</li>
+</ol>
+<p>加载阶段完成后，虚拟机外部的二进制字节流就按照虚拟机所需的格式存储在方法区之中，方法区中的数据存储格式由虚拟机实现自行定义，虚拟机规范未规定此区域的具体数据结构。然后在内存中实例化一个 java.lang.Class 类的对象（并没有明确规定是在 Java 堆中，对于 HotSpot 虚拟机而言，Class 对象比较特殊，它虽然是对象，但是存放在方法区里面），这个对象将作为程序访问方法区中的这些类型数据的外部接口。</p>
+<p>加载阶段与连接阶段的部分内容（如一部分字节码文件格式验证动作）是交叉进行的，加载阶段尚未完成，连接阶段可能已经开始，但这些夹在加载阶段之中进行的动作，仍然属于连接阶段的内容，这两个阶段的开始时间仍然保持着固定的先后顺序。</p>
+<h5 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h5><p>验证是连接阶段的第一步，这一阶段的目的是为了确保 Class 文件的字节流中包含的信息符合当前虚拟机的要求，并且不会危害虚拟机自身的安全。</p>
+<p>Java 语言本身是相对安全的语言（依然是相对于 C/C++ 来说），使用纯粹的 Java 代码无法做到诸如访问数组边界以外的数据、将一个对象转型为它并未实现的类型、跳转到不存在的代码行之类的事情，如果这样做了，编译器将拒绝编译。但前面已经说过，Class 文件并不一定要求用 Java 源码编译而来，可以使用任何途径产生，甚至包括用十六进制编辑器直接编写来产生 Class 文件。在字节码语言层面上，上述 Java 代码无法做到的事情都是可以实现的，至少语义上是可以表达出来的。虚拟机如果不检查输入的字节流，对其完全信任的话，很可能会因为载入了有害的字节流而导致系统崩溃，所以验证是虚拟机对自身保护的一项重要工作。</p>
+<p>验证阶段是非常重要的，这个阶段是否严谨，直接决定了 Java 虚拟机是否能承受恶意代码的攻击，从执行性能的角度上讲，验证阶段的工作量在虚拟机的类加载子系统中又占了相当大的一部分。《Java 虚拟机规范（第 2 版）》对这个阶段的限制、知道还是比较笼统的，规范中列举了一些 Class 文件格式中的静态和结构化约束，如果验证到输入的字节流不符合 Class 文件格式的约束，虚拟机就应抛出一个 java.lang.VerifyError 异常或其子类异常，但具体应当检查哪些方面，如何检查，何时检查，都没有足够具体的要求和明确的说明。知道 2011 年发布的《Java 虚拟机规范（Java SE 7 版）》，大幅增加了描述验证过程的篇幅（从不到 10 页增加到 130 页），这时约束和验证规则才变得具体起来。受篇幅所限，无法逐条规则去讲解，但从整体上看，验证阶段大致上会完成下面 4 个阶段的检验动作：文件格式验证、元数据验证、字节码验证、符号引用验证。</p>
+<ol>
+<li><strong>文件格式验证</strong></li>
+</ol>
+<p>第一阶段要验证字节流是否符合 Class 文件格式的规范，并且能被当前版本的虚拟机处理。这一阶段可能包括下面这些验证点：</p>
+<ul>
+<li>是否以魔数 0xCAFEBABE 开头。</li>
+<li>主、次版本号是否在当前虚拟机处理范围之内。</li>
+<li>常量池的常量中是否有不被支持的常量类型（检查常量 tag 标志）。</li>
+<li>CONSTANT_Utf8_info 型的常量中是否有不符合 UTF8 编码的数据。</li>
+<li>Class 文件中各个部分及文件本身是否有被删除的或附加的其他信息。</li>
+</ul>
+<p>实际上，第一阶段的验证点还远不止这些，上面这些知识从 HotSpot 虚拟机中摘抄的一小部分内容，该验证阶段的主要目的是保证输入的字节流能正确地解析并存储于方法区之内，格式上符合描述一个 Java 类型信息的要求。这阶段的验证是基于二进制字节流进行的，只有通过了这个阶段的验证后，字节流才会进入内存的方法区中进行存储，所以后面 3 个验证阶段全部是基于方法区的存储结构进行的，不会再直接操作字节流。</p>
+<ol>
+<li><strong>元数据验证</strong></li>
+</ol>
+<p>第二阶段是对字节码描述的信息进行语义分析，以保证其描述的信息符合 Java 语言规范的要求，这个阶段可能包括的验证点如下：</p>
+<ul>
+<li>这个类是否有父类（除了 java.lang.Object 之外，所有的类都应当有父类）。</li>
+<li>这个类的父类是否继承了不允许被继承的类（被 final 修饰的类）。</li>
+<li>如果这个类不是抽象类，是否实现了其父类或接口之中要求实现的所有方法。</li>
+<li>类中的字段、方法是否与父类产生矛盾（例如覆盖了父类的 final 字段，或者出现不符合规则的方法重载，例如方法参数都一致，但返回值类型却不同等）。</li>
+</ul>
+<p>第二阶段的主要目的是对类的元数据信息进行语义校验，保证不存在不符合Java 语言规范的元数据信息。</p>
+<ol>
+<li><strong>字节码验证</strong></li>
+</ol>
+<p>第三阶段是整个验证过程中最复杂的一个阶段，主要目的是通过数据流和控制流分析，确定程序语义是合法的、符合逻辑的。在第二阶段对元数据信息中的数据类型做完校验后，这个阶段将对类的方法体进行校验分析，保证被校验类的方法在运行时不会做出危害虚拟机安全的事件。例如：</p>
+<ul>
+<li>保证任意时刻操作数栈的数据类型与指令代码序列都能配合工作，例如不会出现类似这样的情况：在操作栈放置了一个 int 类型的数据，使用时却按 long 类型来加载入本地变量表中。</li>
+<li>保证跳转指令不会跳转到方法体以外的字节码指令上。</li>
+<li>保证方法体中的类型转换是有效的，例如可以把一个子类对象赋值给父类数据类型，这是安全的，但是把父类对象赋值给子类数据类型，甚至把对象赋值给与它毫无继承关系、完全不相干的一个数据类型，则是危险和不合法的。</li>
+</ul>
+<p>如果一个类方法体的字节码没有通过字节码验证，那肯定是有问题的；但如果一个方法体通过了字节码验证，也不能说明其一定就是安全的。即使字节码验证之中进行了大量的检查，也不能保证这一点。这里涉及了离散数学中一个很著名的问题 “Halting Problem”（停机问题）：通俗一点的说法就是，通过程序去校验程序逻辑是无法做到绝对准确的——不能通过程序准确地检查出程序是否能在有限的时间之内结束运行。</p>
+<p>由于数据流验证的高复杂性，虚拟机设计团队为了避免过多的时间消耗在字节码验证阶段，在 JDK 1.6 之后的 javac 编译器和 Java 虚拟机中进行了一项优化，给方法体的 Code 属性的属性表中增加了一项名为 “StackMapTable” 的属性，这项属性描述了方法体中所有的基本快（Basic Block，按照控制流拆分的代码块）开始时本地变量表和操作栈应有的状态，在字节码验证期间，就不需要根据程序推导这些状态的合法性，只需要检查 StackMapTable 属性中的记录是否合法即可。这样讲字节码验证的类型推导转变为类型检查从而节省一些时间。</p>
+<p>理论上 StackMapTable 属性也存在错误或被篡改的可能，所以是否有可能在恶意篡改了 Code 属性的同时，也生成相应的 StackMapTable 属性来骗过虚拟机的类型校验则是虚拟机设计者值得思考的问题。</p>
+<p> 在 JDK 1.6 的 HotSpot 虚拟机中提供了 -XX:-UseSplitVerifier 选项来关闭这项优化，或者使用参数 -XX:+FailOverToOldVerifier 要求在类型校验失败的时候退回到旧的类型推导方式进行校验。而在 JDK 1.7 之后，对于主版本大于 50 的 Class 文件，使用类型检查来完成数据流分析则是唯一的选择，不允许再退回到类型推导的校验方式。</p>
+<ol>
+<li><p><strong>符号引用验证</strong></p>
+<p>最后一个阶段的校验发生在虚拟机将符号引用转化为直接引用的时候，这个转换动作将在连接的第三个阶段——解析阶段中发生。符号引用验证可以看做是对类自身以外（常量池中的各种符号引用）的信息进行匹配性校验，通常需要校验下列内容：</p>
 </li>
-</ul>
-<p>除了让你更为了解操作系统之外，学习 C 语言还能让你更清楚地知道程序是怎么精细控制底层资源的，比如内存管理、文件操作、网络通信……</p>
-<p>这里需要说明的是，我们还是需要学习汇编语言的。因为如果你想更深入地了解计算机是怎么运作的，那么是需要了解汇编语言的。虽然我们几乎不再用汇编语言编程了，但是如果你需要写一些如 lock free 之类高并发的东西，那么了解汇编语言，能有助于你更好地理解和思考。</p>
+</ol>
 <ul>
-<li>编程范式：各种编程语言都有它们各自的编程范式，用于解决各种问题。比如面向对象编程（C++、Java）、泛型编程（C++、Go、C#）、函数式编程（JavaScript、 Python、Lisp、Haskell、Erlang）等。</li>
+<li>符号引用中通过字符串描述的全限定名是否能找到对应的类。</li>
+<li>在指定类中是否存在符合方法的字段描述符以及简单名称所描述的方法和字段</li>
+<li>符号引用中的类、字段、方法的访问性（private、protected、public、default）是否可被当前类访问。</li>
 </ul>
-<p>学习好编程范式，有助于培养编程的抽象思维，提高编程效率，提高程序的结构合理性、可读性和可维护性，降低代码的冗余度，提高代码的运行效率。要学习编程范式，可以多了解各种程序设计语言的功能特性。</p>
-<ul>
-<li>算法和数据结构：算法（及其相应的数据结构）是程序设计的有力支撑。适当地应用算法，可以有效地抽象问题，提高程序的合理性和执行效率。算法是编程中最最重要的东西，也是计算机科学中最重要的东西。</li>
-</ul>
-<p>任何有技术含量的软件中一定有高级的算法和数据结构。比如 epoll 中使用了红黑树，数据库索引使用了 B+ 树……而就算是你的业务系统中，也一定使用各种排序、过滤和查找算法。学习算法不仅是为了写出运转更为高效的代码，而且更是为了能够写出可以覆盖更多场景的正确代码。</p>
-<h4 id="系统部分"><a href="#系统部分" class="headerlink" title="系统部分"></a>系统部分</h4><ul>
-<li>计算机系统原理：CPU 的体系结构（指令集 [CISC/RISC]、分支预测、缓存结构、总线、DMA、中断、陷阱、多任务、虚拟内存、虚拟化等），内存的原理与性能特点（SRAM、DRAM、DDR-SDRAM 等），磁盘的原理（机械硬盘 [盘面、磁头臂、磁头、启停区、寻道等]、固态硬盘 [页映射、块的合并与回收算法、TRIM 指令等]），GPU 的原理等。</li>
-</ul>
-<p>学习计算机系统原理的价值在于，除了能够了解计算机的原理之外，你还能举一反三地反推出高维度的分布式架构和高并发高可用的架构设计。</p>
-<p>比如：虚拟化内存就和今天云计算中的虚拟化的原理是相通的，计算机总线和分布式架构中的 ESB 也有相通之处，计算机指令调度、并发控制可以让你更好地理解并发编程和做程序性能调优……这里，推荐书籍《深入理解计算机系统》（Randal E. Bryant）。</p>
-<ul>
-<li>操作系统原理和基础：进程、进程管理、线程、线程调度、多核的缓存一致性、信号量、物理内存管理、虚拟内存管理、内存分配、文件系统、磁盘管理等。</li>
-</ul>
-<p>学习操作系统的价值在于理解程序是怎样被管理的，操作系统对应用程序提供了怎样的支持，抽象出怎样的编程接口（比如 POSIX/Win32 API），性能特性如何（比如控制合理的上下文切换次数），怎样进行进程间通信（如管道、套接字、内存映射等），以便让不同的软件配合一起运行等。</p>
-<p>要学习操作系统知识，一是仔细观察和探索当前使用的操作系统，二是阅读讲操作系统原理的图书，三是阅读 API 文档（如 man pages 和 MSDN Library），并编写调用操作系统功能的程序。这里推荐三本书《UNIX 高级环境编程》、《UNIX 网络编程》和《Windows 核心编程》。</p>
-<p>学习操作系统基础原理的好处是，这是所有程序运行的物理世界，无论上层是像 C/C++ 这样编译成机器码的语言，还是像 Java 这样有 JVM 做中间层的语言，还是像 Python/PHP/Perl/Node.js 这样直接在运行时解释的语言，其在底层都逃离不了操作系统这个物理世界的“物理定律”。</p>
-<p>所以，了解操作系统的原理，可以让你更能本质地理解各种语言或是技术的底层原理。一眼看透本质将让你更容易地掌握和使用高阶技术。</p>
-<ul>
-<li>网络基础：计算机网络是现代计算机不可或缺的一部分。需要了解基本的网络层次结构（ISO/OSI 模型、TCP/IP 协议栈），包括物理层、数据链路层（包含错误重发机制）、网络层（包含路由机制）、传输层（包含连接保持机制）、会话层、表示层、应用层（在 TCP/IP 协议栈里，这三层可以并为一层）。</li>
-</ul>
-<p>比如，底层的 ARP 协议、中间的 TCP/UDP 协议，以及高层的 HTTP 协议。这里推荐书籍《TCP/IP 详解》，学习这些基础的网络协议，可以为我们的高维分布式架构中的一些技术问题提供很多的技术方案。比如：TCP 的滑动窗口限流，完全可以用于分布式服务中的限流方案。</p>
-<ul>
-<li>数据库原理：数据库管理系统是管理数据库的利器。通常操作系统提供文件系统来管理文件数据，而文件比较适合保存连续的信息，如一篇文章、一个图片等。但有时需要保存一个名字等较短的信息。如果单个文件只保存名字这样的几个字节的信息的话，会浪费大量的磁盘空间，而且无法方便地查询（除非使用索引服务）。</li>
-</ul>
-<p>但数据库则更适合保存这种短的数据，而且可以方便地按字段进行查询。现代流行的数据库管理系统有两大类：SQL（基于 B+ 树，强一致性）和 NoSQL（较弱的一致性，较高的存取效率，基于哈希表或其他技术）。</p>
-<p>学习了数据库原理之后更能了解数据库访问性能调优的要点，以及保证并发情况下数据操作原子性的方法。要学习数据库，可以阅读各类数据库图书，并多做数据库操作以及数据库编程，多观察分析数据库在运行时的性能。</p>
-<ul>
-<li>分布式技术架构：数据库和应用程序服务器在应对互联网上数以亿计的访问量的时候，需要能进行横向扩展，才能提供足够的性能。为了做到这一点，要学习分布式技术架构，包括负载均衡、DNS 解析、多子域名、无状态应用层、缓存层、数据库分片、容错和恢复机制、Paxos、Map/Reduce 操作、分布式 SQL 数据库一致性（以 Google Cloud Spanner 为代表）等知识点。</li>
-</ul>
-<p>学习分布式技术架构的有效途径是参与到分布式项目的开发中去，并阅读相关论文。</p>
-<blockquote>
-<p>注意，上面这些基础知识通常不是可以速成的。虽然说，你可以在一两年内看完相关的书籍或论文，但是，我想说的是，这些基础技术是需要你用一生的时间来学习的，因为基础上的技术和知识，会随着阅历和经验的增加而有不同的感悟。</p>
-</blockquote>
-<h3 id="以下是我对这些基础知识整理的思维导图，可能看的更清晰一点"><a href="#以下是我对这些基础知识整理的思维导图，可能看的更清晰一点" class="headerlink" title="以下是我对这些基础知识整理的思维导图，可能看的更清晰一点"></a>以下是我对这些基础知识整理的思维导图，可能看的更清晰一点</h3><p><img src="http://p0c736231.bkt.clouddn.com/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86.png" alt=""></p>
+<p>符号引用验证的目的是确保解析动作能正常执行，如果无法通过符号引用验证，那么将会抛出一个 java.lang.IncompatibleClassChangeError 异常的子类，如 java.lang.IllegalAccessError、java.lang.NoSuchFieldError、java.lang.NoSuchMethodError 等。</p>
+<p>对于虚拟机的类加载机制来说，验证阶段是一个非常重要的、但不是一定必要（因为对程序运行期没有影响）的阶段。如果所运行的全部代码（包括自己编写的及第三方包中的代码）都已经被反复使用和验证过，那么在实施阶段就可以考虑使用-Xverify:none 参数来关闭大部分的类验证措施，以缩短虚拟机类加载的时间。</p>
+<h5 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h5><p>准备阶段是正式为类变量分配内存并设置类变量初始值的阶段，这些变量所使用的内存都将在方法区中进行分配。这时候进行内存分配的仅包括类变量（被static修饰的变量），而不包括实例变量，实例变量将会在对象实例化时随着对象一起分配在堆中。其次，这里所说的初始值“通常情况”下是数据类型的零值，假设一个类变量的定义为：</p>
+<p>public static int value=123;<br>那变量value在准备阶段过后的初始值为0而不是123.因为这时候尚未开始执行任何java方法，而把value赋值为123的putstatic指令是程序被编译后，存放于类构造器()方法之中，所以把value赋值为123的动作将在初始化阶段才会执行。<br>至于“特殊情况”是指：public static final int value=123，即当类字段的字段属性是ConstantValue时，会在准备阶段初始化为指定的值，所以标注为final之后，value的值在准备阶段初始化为123而非0.</p>
+<h5 id="解析"><a href="#解析" class="headerlink" title="解析"></a>解析</h5><p>解析阶段是虚拟机将常量池内的符号引用替换为直接引用的过程。解析动作主要针对类或接口、字段、类方法、接口方法、方法类型、方法句柄和调用点限定符7类符号引用进行。</p>
+<h5 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h5><p>类初始化阶段是类加载过程的最后一步，到了初始化阶段，才真正开始执行类中定义的java程序代码。在准备极端，变量已经付过一次系统要求的初始值，而在初始化阶段，则根据程序猿通过程序制定的主管计划去初始化类变量和其他资源，或者说：初始化阶段是执行类构造器<clinit>()方法的过程.</clinit></p>
+<p><clinit>()方法是由编译器自动收集类中的所有类变量的赋值动作和静态语句块static{}中的语句合并产生的，编译器收集的顺序是由语句在源文件中出现的顺序所决定的，静态语句块只能访问到定义在静态语句块之前的变量，定义在它之后的变量，在前面的静态语句块可以赋值，但是不能访问。如下：</clinit></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">public class Test</div><div class="line">&#123;</div><div class="line">    static</div><div class="line">    &#123;</div><div class="line">        i=0;</div><div class="line">        System.out.println(i);//这句编译器会报错：Cannot reference a field before it is defined（非法向前应用）</div><div class="line">    &#125;</div><div class="line">    static int i=1;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><clinit>()方法与实例构造器<init>()方法不同，它不需要显示地调用父类构造器，虚拟机会保证在子类<init>()方法执行之前，父类的<clinit>()方法方法已经执行完毕，回到本文开篇的举例代码中，结果会打印输出：SSClass就是这个道理。<br>由于父类的<clinit>()方法先执行，也就意味着父类中定义的静态语句块要优先于子类的变量赋值操作。</clinit></clinit></init></init></clinit></p>
+<p><clinit>()方法对于类或者接口来说并不是必需的，如果一个类中没有静态语句块，也没有对变量的赋值操作，那么编译器可以不为这个类生产<clinit>()方法。<br>接口中不能使用静态语句块，但仍然有变量初始化的赋值操作，因此接口与类一样都会生成<clinit>()方法。但接口与类不同的是，执行接口的<clinit>()方法不需要先执行父接口的<clinit>()方法。只有当父接口中定义的变量使用时，父接口才会初始化。另外，接口的实现类在初始化时也一样不会执行接口的<clinit>()方法。<br>虚拟机会保证一个类的<clinit>()方法在多线程环境中被正确的加锁、同步，如果多个线程同时去初始化一个类，那么只会有一个线程去执行这个类的<clinit>()方法，其他线程都需要阻塞等待，直到活动线程执行<clinit>()方法完毕。如果在一个类的<clinit>()方法中有好事很长的操作，就可能造成多个线程阻塞，在实际应用中这种阻塞往往是隐藏的。</clinit></clinit></clinit></clinit></clinit></clinit></clinit></clinit></clinit></clinit></p>
 
       
     </div>
@@ -570,7 +611,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="http://bryancrash.site/2017/12/02/论技术基础的重要性/" title="论技术基础的重要性">http://bryancrash.site/2017/12/02/论技术基础的重要性/</a>
+    <a href="http://bryancrash.site/2018/04/05/虚拟机类加载机制/" title="虚拟机类加载机制">http://bryancrash.site/2018/04/05/虚拟机类加载机制/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>
@@ -585,7 +626,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/计算机基础/" rel="tag"><i class="fa fa-tag"></i> -计算机基础</a>
+            <a href="/tags/Java虚拟机/" rel="tag"><i class="fa fa-tag"></i> -Java虚拟机</a>
           
         </div>
       
@@ -598,8 +639,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/12/02/Java内存模型/" rel="next" title="Java内存模型">
-                <i class="fa fa-chevron-left"></i> Java内存模型
+              <a href="/2018/04/05/字节码指令/" rel="next" title="字节码指令">
+                <i class="fa fa-chevron-left"></i> 字节码指令
               </a>
             
           </div>
@@ -607,10 +648,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2017/12/24/HashMap源码分析/" rel="prev" title="HashMap源码分析">
-                HashMap源码分析 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -809,7 +846,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#具体来说，就是分成两个部分：系统和编程。"><span class="nav-number">2.</span> <span class="nav-text">具体来说，就是分成两个部分：系统和编程。</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#编程部分"><span class="nav-number">2.1.</span> <span class="nav-text">编程部分</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#系统部分"><span class="nav-number">2.2.</span> <span class="nav-text">系统部分</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#以下是我对这些基础知识整理的思维导图，可能看的更清晰一点"><span class="nav-number">3.</span> <span class="nav-text">以下是我对这些基础知识整理的思维导图，可能看的更清晰一点</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#类加载的时机"><span class="nav-number">1.</span> <span class="nav-text">类加载的时机</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#类加载的过程"><span class="nav-number">2.</span> <span class="nav-text">类加载的过程</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#加载"><span class="nav-number">2.1.</span> <span class="nav-text">加载</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#验证"><span class="nav-number">2.2.</span> <span class="nav-text">验证</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#准备"><span class="nav-number">2.3.</span> <span class="nav-text">准备</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#解析"><span class="nav-number">2.4.</span> <span class="nav-text">解析</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#初始化"><span class="nav-number">2.5.</span> <span class="nav-text">初始化</span></a></li></ol></li></ol></div>
             
 
           </div>

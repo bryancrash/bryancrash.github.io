@@ -323,6 +323,1887 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://bryancrash.site/2018/04/05/虚拟机类加载机制/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="bryan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/image/bryan.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="林距离">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/04/05/虚拟机类加载机制/" itemprop="url">虚拟机类加载机制</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-05T12:22:11+08:00">
+                2018-04-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java虚拟机/" itemprop="url" rel="index">
+                    <span itemprop="name">-Java虚拟机</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-comment-o"></i>
+              </span>
+              
+                <a href="/2018/04/05/虚拟机类加载机制/#SOHUCS" itemprop="discussionUrl">
+                  <span id="url::http://bryancrash.site/2018/04/05/虚拟机类加载机制/" class="cy_cmt_count" data-xid="2018/04/05/虚拟机类加载机制/" itemprop="commentsCount" ></span>
+                </a>
+              
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  5,260
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  18
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h4 id="类加载的时机"><a href="#类加载的时机" class="headerlink" title="类加载的时机"></a>类加载的时机</h4><p>类从被加载到虚拟机内存中开始，到卸载出内存为止，它的整个生命周期包括：加载，验证，准备，解析，初始化，使用的卸载7个过程，其中验证，准备，解析3个部分统称为连接.<br>对于初始化阶段，虚拟机规范则是严格规定了有且仅有5种情况必须立即对类进行“初始化”：</p>
+<ol>
+<li>遇到new、getstatic、putstatic、或invokestatic这4个字节码指令时，如果类没有进行过初始化，则需要先触发其初始化。生成这4跳指令的最常见的Java代码场景是：使用new关键字实例化对象的时候、读取或设置一个类的关键字段（被final修饰、已在编译期把结果放入常量池的静态字段除外）的时候，以及调用一个类的静态方法的时候</li>
+<li>使用java.lang.reflect包的方法对类进行反射调用的时候，如果类没有进行过初始化，则需要先触发其初始化</li>
+<li>当初始化一个类的时候，如果发现其父类还没有进行过初始化，则需要先触发其父类的初始化</li>
+<li>当虚拟机启动时，用户需要指定一个要执行的主类，虚拟机会先初始化这个主类</li>
+<li>当使用jdk1.7的动态语言支持时，如果一个java.lang.invoke.MethodHandle实例最后的解析结果REF_getStatic、REF_invokestatic的方法句柄，并且这个方法句柄所对应的类没有进行过初始化，则需要先触发其初始化</li>
+</ol>
+<p>有且仅有这5种场景种的行为称为对一个类进行主动引用，除此之外，所有引用类的方法都不会触发初始化，称为被动引用</p>
+<h4 id="类加载的过程"><a href="#类加载的过程" class="headerlink" title="类加载的过程"></a>类加载的过程</h4><h5 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h5><p>加载” 是 “类加载”（Class Loading）过程的一个阶段，希望读者没有混淆这两个看起来很相似的名词。在加载阶段，虚拟机需要完成以下 3 件事情：</p>
+<ol>
+<li>通过一个类的全限定名来获取定义此类的二进制字节流。</li>
+<li>将这个字节流所代表的静态存储结构转换为方法区的运行时数据结构</li>
+<li>在内存中生成一个代表这个类的 java.lang.Class 对象，作为方法区这个类的各种数据的访问入口。</li>
+</ol>
+<p>虚拟机规范的这 3 点要求其实并不算具体，因此虚拟机实现与具体应用的灵活度都是相当大的。例如 “通过一个类的全限定名来获取定义此类的二进制字节流” 这条，它没有指明二进制字节流要从一个 Class 文件中获取，准确地说是根本没有指明要从哪里获取、怎样获取。虚拟机设计团队在加载阶段搭建了一个相当开放的、广阔的 “舞台”，Java 发展历程中，充满创造力的开发人员则再这个 “舞台” 上玩出了各种花样，许多举足轻重的 Java 技术都建立在这一基础之上，例如：</p>
+<ol>
+<li>从 ZIP 包中读取，这很常见，最终成为日后 JAR、EAR、WAR 格式的基础。</li>
+<li>从网络中获取，这种常见最典型的应用就是 Applet。</li>
+<li>运行时计算生成，这种常见使用得最多的就是动态代理技术，在 java.lang.reflect.Proxy 中，就是用了 ProxyGenerator.generateProxyClass 来为特定接口生成形式为 “*$Proxy” 的代理类的二进制字节流。</li>
+<li>由其他文件生成，典型场景是 JSP 应用，即由 JSP 文件生成对应的 Class 类。</li>
+<li>从数据库中读取，这种场景相对少见些，例如有些中间件服务器（如 SAP Netweaver）可以选择把程序安装到数据库中来完成程序代码在集群间的分发。</li>
+</ol>
+<p>相对于类加载过程的其他阶段，一个非数组类的加载阶段（准确地说，是加载阶段中获取类的二进制字节流的动作）是开发人员可控性最强的，因为加载阶段既可以使用系统提供的引导类加载器来完成，也可以由用户自定义的类加载器去完成，开发人员可以通过定义自己的类加载器去控制字节流的获取方式（即重写一个类加载器的loadClass() 方法）。</p>
+<p>对于数组类而言，情况就有所不同，数组类本身不通过类加载器创建，它是由 Java 虚拟机直接创建的。但数组类与类加载器仍然有很密切的关系，因为数组类的元素类型（Element Type，指的是数组去掉所有纬度的类型）最终是要考类加载器去创建，一个数组类（下面简称为 C）创建过程要遵循以下规则：</p>
+<ol>
+<li>如果数组的组件类型（Component Type，指的是数组去掉一个纬度的类型）是引用类型，那就递归采用本节中定义的加载过程去加载这个组件类型，数组 C 将在加载该组件类型的类加载器的类名称空间上被标识（这点很重要，一个类必须与类加载器一起确定唯一性）。</li>
+<li>如果数组的组件类型不是引用类型（例如 int[] 数组），Java 虚拟机将会把数组 C 标记为与引导类加载器关联。</li>
+<li>数组类的可见性与它的组件类型的可见性一直，如果组件类型不是引用类型，那数组类的可见性将默认为 public。</li>
+</ol>
+<p>加载阶段完成后，虚拟机外部的二进制字节流就按照虚拟机所需的格式存储在方法区之中，方法区中的数据存储格式由虚拟机实现自行定义，虚拟机规范未规定此区域的具体数据结构。然后在内存中实例化一个 java.lang.Class 类的对象（并没有明确规定是在 Java 堆中，对于 HotSpot 虚拟机而言，Class 对象比较特殊，它虽然是对象，但是存放在方法区里面），这个对象将作为程序访问方法区中的这些类型数据的外部接口。</p>
+<p>加载阶段与连接阶段的部分内容（如一部分字节码文件格式验证动作）是交叉进行的，加载阶段尚未完成，连接阶段可能已经开始，但这些夹在加载阶段之中进行的动作，仍然属于连接阶段的内容，这两个阶段的开始时间仍然保持着固定的先后顺序。</p>
+<h5 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h5><p>验证是连接阶段的第一步，这一阶段的目的是为了确保 Class 文件的字节流中包含的信息符合当前虚拟机的要求，并且不会危害虚拟机自身的安全。</p>
+<p>Java 语言本身是相对安全的语言（依然是相对于 C/C++ 来说），使用纯粹的 Java 代码无法做到诸如访问数组边界以外的数据、将一个对象转型为它并未实现的类型、跳转到不存在的代码行之类的事情，如果这样做了，编译器将拒绝编译。但前面已经说过，Class 文件并不一定要求用 Java 源码编译而来，可以使用任何途径产生，甚至包括用十六进制编辑器直接编写来产生 Class 文件。在字节码语言层面上，上述 Java 代码无法做到的事情都是可以实现的，至少语义上是可以表达出来的。虚拟机如果不检查输入的字节流，对其完全信任的话，很可能会因为载入了有害的字节流而导致系统崩溃，所以验证是虚拟机对自身保护的一项重要工作。</p>
+<p>验证阶段是非常重要的，这个阶段是否严谨，直接决定了 Java 虚拟机是否能承受恶意代码的攻击，从执行性能的角度上讲，验证阶段的工作量在虚拟机的类加载子系统中又占了相当大的一部分。《Java 虚拟机规范（第 2 版）》对这个阶段的限制、知道还是比较笼统的，规范中列举了一些 Class 文件格式中的静态和结构化约束，如果验证到输入的字节流不符合 Class 文件格式的约束，虚拟机就应抛出一个 java.lang.VerifyError 异常或其子类异常，但具体应当检查哪些方面，如何检查，何时检查，都没有足够具体的要求和明确的说明。知道 2011 年发布的《Java 虚拟机规范（Java SE 7 版）》，大幅增加了描述验证过程的篇幅（从不到 10 页增加到 130 页），这时约束和验证规则才变得具体起来。受篇幅所限，无法逐条规则去讲解，但从整体上看，验证阶段大致上会完成下面 4 个阶段的检验动作：文件格式验证、元数据验证、字节码验证、符号引用验证。</p>
+<ol>
+<li><strong>文件格式验证</strong></li>
+</ol>
+<p>第一阶段要验证字节流是否符合 Class 文件格式的规范，并且能被当前版本的虚拟机处理。这一阶段可能包括下面这些验证点：</p>
+<ul>
+<li>是否以魔数 0xCAFEBABE 开头。</li>
+<li>主、次版本号是否在当前虚拟机处理范围之内。</li>
+<li>常量池的常量中是否有不被支持的常量类型（检查常量 tag 标志）。</li>
+<li>CONSTANT_Utf8_info 型的常量中是否有不符合 UTF8 编码的数据。</li>
+<li>Class 文件中各个部分及文件本身是否有被删除的或附加的其他信息。</li>
+</ul>
+<p>实际上，第一阶段的验证点还远不止这些，上面这些知识从 HotSpot 虚拟机中摘抄的一小部分内容，该验证阶段的主要目的是保证输入的字节流能正确地解析并存储于方法区之内，格式上符合描述一个 Java 类型信息的要求。这阶段的验证是基于二进制字节流进行的，只有通过了这个阶段的验证后，字节流才会进入内存的方法区中进行存储，所以后面 3 个验证阶段全部是基于方法区的存储结构进行的，不会再直接操作字节流。</p>
+<ol>
+<li><strong>元数据验证</strong></li>
+</ol>
+<p>第二阶段是对字节码描述的信息进行语义分析，以保证其描述的信息符合 Java 语言规范的要求，这个阶段可能包括的验证点如下：</p>
+<ul>
+<li>这个类是否有父类（除了 java.lang.Object 之外，所有的类都应当有父类）。</li>
+<li>这个类的父类是否继承了不允许被继承的类（被 final 修饰的类）。</li>
+<li>如果这个类不是抽象类，是否实现了其父类或接口之中要求实现的所有方法。</li>
+<li>类中的字段、方法是否与父类产生矛盾（例如覆盖了父类的 final 字段，或者出现不符合规则的方法重载，例如方法参数都一致，但返回值类型却不同等）。</li>
+</ul>
+<p>第二阶段的主要目的是对类的元数据信息进行语义校验，保证不存在不符合Java 语言规范的元数据信息。</p>
+<ol>
+<li><strong>字节码验证</strong></li>
+</ol>
+<p>第三阶段是整个验证过程中最复杂的一个阶段，主要目的是通过数据流和控制流分析，确定程序语义是合法的、符合逻辑的。在第二阶段对元数据信息中的数据类型做完校验后，这个阶段将对类的方法体进行校验分析，保证被校验类的方法在运行时不会做出危害虚拟机安全的事件。例如：</p>
+<ul>
+<li>保证任意时刻操作数栈的数据类型与指令代码序列都能配合工作，例如不会出现类似这样的情况：在操作栈放置了一个 int 类型的数据，使用时却按 long 类型来加载入本地变量表中。</li>
+<li>保证跳转指令不会跳转到方法体以外的字节码指令上。</li>
+<li>保证方法体中的类型转换是有效的，例如可以把一个子类对象赋值给父类数据类型，这是安全的，但是把父类对象赋值给子类数据类型，甚至把对象赋值给与它毫无继承关系、完全不相干的一个数据类型，则是危险和不合法的。</li>
+</ul>
+<p>如果一个类方法体的字节码没有通过字节码验证，那肯定是有问题的；但如果一个方法体通过了字节码验证，也不能说明其一定就是安全的。即使字节码验证之中进行了大量的检查，也不能保证这一点。这里涉及了离散数学中一个很著名的问题 “Halting Problem”（停机问题）：通俗一点的说法就是，通过程序去校验程序逻辑是无法做到绝对准确的——不能通过程序准确地检查出程序是否能在有限的时间之内结束运行。</p>
+<p>由于数据流验证的高复杂性，虚拟机设计团队为了避免过多的时间消耗在字节码验证阶段，在 JDK 1.6 之后的 javac 编译器和 Java 虚拟机中进行了一项优化，给方法体的 Code 属性的属性表中增加了一项名为 “StackMapTable” 的属性，这项属性描述了方法体中所有的基本快（Basic Block，按照控制流拆分的代码块）开始时本地变量表和操作栈应有的状态，在字节码验证期间，就不需要根据程序推导这些状态的合法性，只需要检查 StackMapTable 属性中的记录是否合法即可。这样讲字节码验证的类型推导转变为类型检查从而节省一些时间。</p>
+<p>理论上 StackMapTable 属性也存在错误或被篡改的可能，所以是否有可能在恶意篡改了 Code 属性的同时，也生成相应的 StackMapTable 属性来骗过虚拟机的类型校验则是虚拟机设计者值得思考的问题。</p>
+<p> 在 JDK 1.6 的 HotSpot 虚拟机中提供了 -XX:-UseSplitVerifier 选项来关闭这项优化，或者使用参数 -XX:+FailOverToOldVerifier 要求在类型校验失败的时候退回到旧的类型推导方式进行校验。而在 JDK 1.7 之后，对于主版本大于 50 的 Class 文件，使用类型检查来完成数据流分析则是唯一的选择，不允许再退回到类型推导的校验方式。</p>
+<ol>
+<li><p><strong>符号引用验证</strong></p>
+<p>最后一个阶段的校验发生在虚拟机将符号引用转化为直接引用的时候，这个转换动作将在连接的第三个阶段——解析阶段中发生。符号引用验证可以看做是对类自身以外（常量池中的各种符号引用）的信息进行匹配性校验，通常需要校验下列内容：</p>
+</li>
+</ol>
+<ul>
+<li>符号引用中通过字符串描述的全限定名是否能找到对应的类。</li>
+<li>在指定类中是否存在符合方法的字段描述符以及简单名称所描述的方法和字段</li>
+<li>符号引用中的类、字段、方法的访问性（private、protected、public、default）是否可被当前类访问。</li>
+</ul>
+<p>符号引用验证的目的是确保解析动作能正常执行，如果无法通过符号引用验证，那么将会抛出一个 java.lang.IncompatibleClassChangeError 异常的子类，如 java.lang.IllegalAccessError、java.lang.NoSuchFieldError、java.lang.NoSuchMethodError 等。</p>
+<p>对于虚拟机的类加载机制来说，验证阶段是一个非常重要的、但不是一定必要（因为对程序运行期没有影响）的阶段。如果所运行的全部代码（包括自己编写的及第三方包中的代码）都已经被反复使用和验证过，那么在实施阶段就可以考虑使用-Xverify:none 参数来关闭大部分的类验证措施，以缩短虚拟机类加载的时间。</p>
+<h5 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h5><p>准备阶段是正式为类变量分配内存并设置类变量初始值的阶段，这些变量所使用的内存都将在方法区中进行分配。这时候进行内存分配的仅包括类变量（被static修饰的变量），而不包括实例变量，实例变量将会在对象实例化时随着对象一起分配在堆中。其次，这里所说的初始值“通常情况”下是数据类型的零值，假设一个类变量的定义为：</p>
+<p>public static int value=123;<br>那变量value在准备阶段过后的初始值为0而不是123.因为这时候尚未开始执行任何java方法，而把value赋值为123的putstatic指令是程序被编译后，存放于类构造器()方法之中，所以把value赋值为123的动作将在初始化阶段才会执行。<br>至于“特殊情况”是指：public static final int value=123，即当类字段的字段属性是ConstantValue时，会在准备阶段初始化为指定的值，所以标注为final之后，value的值在准备阶段初始化为123而非0.</p>
+<h5 id="解析"><a href="#解析" class="headerlink" title="解析"></a>解析</h5><p>解析阶段是虚拟机将常量池内的符号引用替换为直接引用的过程。解析动作主要针对类或接口、字段、类方法、接口方法、方法类型、方法句柄和调用点限定符7类符号引用进行。</p>
+<h5 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h5><p>类初始化阶段是类加载过程的最后一步，到了初始化阶段，才真正开始执行类中定义的java程序代码。在准备极端，变量已经付过一次系统要求的初始值，而在初始化阶段，则根据程序猿通过程序制定的主管计划去初始化类变量和其他资源，或者说：初始化阶段是执行类构造器<clinit>()方法的过程.</clinit></p>
+<p><clinit>()方法是由编译器自动收集类中的所有类变量的赋值动作和静态语句块static{}中的语句合并产生的，编译器收集的顺序是由语句在源文件中出现的顺序所决定的，静态语句块只能访问到定义在静态语句块之前的变量，定义在它之后的变量，在前面的静态语句块可以赋值，但是不能访问。如下：</clinit></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">public class Test</div><div class="line">&#123;</div><div class="line">    static</div><div class="line">    &#123;</div><div class="line">        i=0;</div><div class="line">        System.out.println(i);//这句编译器会报错：Cannot reference a field before it is defined（非法向前应用）</div><div class="line">    &#125;</div><div class="line">    static int i=1;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><clinit>()方法与实例构造器<init>()方法不同，它不需要显示地调用父类构造器，虚拟机会保证在子类<init>()方法执行之前，父类的<clinit>()方法方法已经执行完毕，回到本文开篇的举例代码中，结果会打印输出：SSClass就是这个道理。<br>由于父类的<clinit>()方法先执行，也就意味着父类中定义的静态语句块要优先于子类的变量赋值操作。</clinit></clinit></init></init></clinit></p>
+<p><clinit>()方法对于类或者接口来说并不是必需的，如果一个类中没有静态语句块，也没有对变量的赋值操作，那么编译器可以不为这个类生产<clinit>()方法。<br>接口中不能使用静态语句块，但仍然有变量初始化的赋值操作，因此接口与类一样都会生成<clinit>()方法。但接口与类不同的是，执行接口的<clinit>()方法不需要先执行父接口的<clinit>()方法。只有当父接口中定义的变量使用时，父接口才会初始化。另外，接口的实现类在初始化时也一样不会执行接口的<clinit>()方法。<br>虚拟机会保证一个类的<clinit>()方法在多线程环境中被正确的加锁、同步，如果多个线程同时去初始化一个类，那么只会有一个线程去执行这个类的<clinit>()方法，其他线程都需要阻塞等待，直到活动线程执行<clinit>()方法完毕。如果在一个类的<clinit>()方法中有好事很长的操作，就可能造成多个线程阻塞，在实际应用中这种阻塞往往是隐藏的。</clinit></clinit></clinit></clinit></clinit></clinit></clinit></clinit></clinit></clinit></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+	
+	<div>
+    
+    </div>
+
+	<div>
+      
+    </div>
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://bryancrash.site/2018/04/05/字节码指令/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="bryan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/image/bryan.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="林距离">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/04/05/字节码指令/" itemprop="url">字节码指令</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-05T12:21:53+08:00">
+                2018-04-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java虚拟机/" itemprop="url" rel="index">
+                    <span itemprop="name">-Java虚拟机</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-comment-o"></i>
+              </span>
+              
+                <a href="/2018/04/05/字节码指令/#SOHUCS" itemprop="discussionUrl">
+                  <span id="url::http://bryancrash.site/2018/04/05/字节码指令/" class="cy_cmt_count" data-xid="2018/04/05/字节码指令/" itemprop="commentsCount" ></span>
+                </a>
+              
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1,370
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  5
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>Java虚拟机的指令由一个字节长度的，代表着某种特定操作含义的数字以及跟随其后的零至多个代表此操作所需参数而构成，由于Java虚拟机采用面向操作数栈而不是寄存器的架构，所以大多数的指令都不包含操作数，只有一个操作码。在Java虚拟机的指令集中，大多数的指令都包含了其操作所对应的数据类型信息，例如，iload指令用于从局部变量表中加载int型的数据到操作数栈中，而float指令加载的则是float类型的数据，这两条指令的操作在虚拟机内部可能会是由同一段代码来实现的，但在class文件中它们必须拥有各自独立的操作码。</p>
+<p>对于大部分为与数据类型相关的字节码指令，他们的操作码助记符中都有特殊的字符来表明专门为哪种数据类型服务：i代表对int类型的数据操作，l代表long，s代表short，b代表byte，c代表char，f代表float，d代表double，a代表reference。</p>
+<h4 id="加载和存储指令"><a href="#加载和存储指令" class="headerlink" title="加载和存储指令"></a>加载和存储指令</h4><ul>
+<li>将一个布局变量加载到操作栈：iload、iload<em><n>、lload、lload</n></em><n>、float、float<em><n>、dloat、dloat</n></em><n>、aload、alod_<n></n></n></n></li>
+<li>将一个数值从操作数栈存储到局部变量表：istore、istore<em><n>、lstore、lstore</n></em><n>、fstore、fstore<em><n>、dstore、dstore</n></em><n>、astore、astore_<n></n></n></n></li>
+<li>将一个常量加载到操作数栈的指令包括有：bipush、sipush、ldc、ldc_w、ldc2_w、aconst_null、iconst<em>m1、iconst</em><i>、lconst<em><l>、fconst</l></em><f>、dconst_<d></d></f></i></li>
+<li>扩充局部变量表的访问索引的指令：wide</li>
+</ul>
+<h4 id="运算指令"><a href="#运算指令" class="headerlink" title="运算指令"></a>运算指令</h4><ul>
+<li>加法指令：iadd、ladd、fadd、dadd</li>
+<li>减法指令：isub、lsub、fsub、dsub</li>
+<li>乘法指令：imul、lmul、fmul、dmul</li>
+<li>除法指令：idiv、ldiv、fdiv、ddiv</li>
+<li>求余指令：irem、lrem、frem、drem</li>
+<li>取反指令：ineg、lneg、fneg、dneg</li>
+<li>位移指令：ishl、ishr、iushr、lshl、lshr、lushr</li>
+<li>按位或指令：ior、lor</li>
+<li>按位与指令：iand、land</li>
+<li>按位异或指令：ixor、lxor</li>
+<li>局部变量自增指令：iinc</li>
+<li>比较指令：dcmpg、dcmpl、fcmpg、fcmpl、lcmp<h3 id="类型转换指令"><a href="#类型转换指令" class="headerlink" title="类型转换指令"></a>类型转换指令</h3>Java虚拟机支持以下数值类型的宽化类型转换：</li>
+</ul>
+<ol>
+<li>int类型到long，float或者double类型</li>
+<li>long类型到float，double类型</li>
+<li>float类型到double类型</li>
+</ol>
+<p>相对的，处理窄化类型转化时，必须显示地使用转化指令来完成，这些指令包括：i2b、i2c、i2s、l2i、f2i、f2l、d2i、d2l和d2f。但是窄化类型转换很可能会造成精度丢失</p>
+<h4 id="对象创建与访问指令"><a href="#对象创建与访问指令" class="headerlink" title="对象创建与访问指令"></a>对象创建与访问指令</h4><ul>
+<li>创建类实例的指令：new</li>
+<li>创建数组的指令：newarray，anewarray，multianewarray</li>
+<li>访问类字段（static字段，或者称为类变量）和实例字段（非static字段，或者成为实例变量）的指令：getfield、putfield、getstatic、putstatic</li>
+<li>把一个数组元素加载到操作数栈的指令：baload、caload、saload、iaload、laload、faload、daload、aaload</li>
+<li>将一个操作数栈的值储存到数组元素中的指令：bastore、castore、sastore、iastore、fastore、dastore、aastore</li>
+<li>取数组长度的指令：arraylength</li>
+<li>检查类实例类型的指令：instanceof、checkcast<h3 id="操作数栈管理指令"><a href="#操作数栈管理指令" class="headerlink" title="操作数栈管理指令"></a>操作数栈管理指令</h3>Java虚拟机提供了一些用于直接操作操作数栈的指令，包括：</li>
+<li>将操作数栈的栈顶一个或者两个元素出栈：pop,pop2</li>
+<li>复制栈顶一个或两个数值并将复制值或者双份的复制值重新压入栈顶：dup,dup2,dup_x1,dup2_x1,dup_x2,dup2_x2</li>
+<li>将栈最顶端的两个数值互换：swap<h3 id="控制转换指令"><a href="#控制转换指令" class="headerlink" title="控制转换指令"></a>控制转换指令</h3></li>
+<li>条件分支：ifeq、iflt、ifle、ifne、ifgt、ifge、ifnull、ifnonnull、if_icmpeq、if_icmpne、if_icmplt, if_icmpgt、if_icmple、if_icmpge、if_acmpeq和if_acmpne。</li>
+<li>复合条件分支：tableswitch、lookupswitch</li>
+<li>无条件分支：goto、goto_w、jsr、jsr_w、ret<h4 id="方法调用和返回指令"><a href="#方法调用和返回指令" class="headerlink" title="方法调用和返回指令"></a>方法调用和返回指令</h4></li>
+<li>invokevirtual指令用于调用对象的实例方法，根据对象的实际类型进行分派（虚方法分派），这也是Java语言中最常见的方法分派方式</li>
+<li>invokeinterface指令用于调用接口方法，它会在运行时搜索一个实现了这个接口方法的对象，找出适合的方法进行调用。</li>
+<li>invokespecial指令用于调用一些需要特殊处理的实例方法，包括实例初始化方法（§2.9）、私有方法和父类方法。</li>
+<li>invokestatic指令用于调用类方法（static方法）。</li>
+</ul>
+<p>而方法返回指令则是根据返回值的类型区分的，包括有ireturn（当返回值是boolean、byte、char、short和int类型时使用）、lreturn、freturn、dreturn和areturn，另外还有一条return指令供声明为void的方法、实例初始化方法、类和接口的类初始化方法使用</p>
+<h4 id="异常处理指令"><a href="#异常处理指令" class="headerlink" title="异常处理指令"></a>异常处理指令</h4><p>Java中显示抛出异常的操作都由athrow指令来实现，除了throw语句显示抛出异常情况外，Java虚拟机规范还规定了许多运行时异常会在其他Java虚拟机指令检测到异常情况时自动抛出</p>
+<h4 id="同步指令"><a href="#同步指令" class="headerlink" title="同步指令"></a>同步指令</h4><p>Java虚拟机可以支持方法级的同步和方法内部一段指令序列的同步，这两种同步结构都使用管道来支持的。方法级的同步时隐式的，即无需通过字节码指令来控制，它实现在方法调用和返回操作之中。同步一段指令集序列通常是由Java语言中的synchronized语句块来表示的，Java虚拟机的指令集有monitorenter和monitorexit两条指令来支持synchronized关键字的语句，正确实现synchronized关键字需要javac编译器与Java虚拟机两者共同协作支持</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+	
+	<div>
+    
+    </div>
+
+	<div>
+      
+    </div>
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://bryancrash.site/2018/04/05/类文件结构/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="bryan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/image/bryan.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="林距离">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/04/05/类文件结构/" itemprop="url">类文件结构</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-05T12:21:33+08:00">
+                2018-04-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java虚拟机/" itemprop="url" rel="index">
+                    <span itemprop="name">-Java虚拟机</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-comment-o"></i>
+              </span>
+              
+                <a href="/2018/04/05/类文件结构/#SOHUCS" itemprop="discussionUrl">
+                  <span id="url::http://bryancrash.site/2018/04/05/类文件结构/" class="cy_cmt_count" data-xid="2018/04/05/类文件结构/" itemprop="commentsCount" ></span>
+                </a>
+              
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1,745
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  6
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>时至今日，商业机构和开源机构已经在Java语言之外发展出一大批Java虚拟机之上运行的语言，如Clojure，Groovy，JRuby，Jython，Scala等。作为一个通用的，机器无关的执行平台，任何其他语言的实现者都可以将Java虚拟机作为语言的产品交付媒介。例如，使用Java编译器可以把Java代码编译为字节码的class文件，使用JRuby等其他语言的编译一样可以把程序代码编译成class文件，虚拟机并不关心class的来源是何种语言。为了节省空间，类文件中没有任何分隔符，各个数据项都是一个挨着一个紧凑排列的，所以其中无论是顺序还是数量等都是严格规定的，哪个字节代表什么含义，长度是多少，先后顺序如何，都不允许改变，其文件格式采用一种。下面我们先看一下类文件的整体结构：</p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>字节数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>魔数</td>
+<td>4</td>
+</tr>
+<tr>
+<td>次版本号</td>
+<td>2</td>
+</tr>
+<tr>
+<td>主版本号</td>
+<td>2</td>
+</tr>
+<tr>
+<td>常量池个数</td>
+<td>2</td>
+</tr>
+<tr>
+<td>常量池1…常量池n</td>
+<td></td>
+</tr>
+<tr>
+<td>访问标志</td>
+<td>2</td>
+</tr>
+<tr>
+<td>类索引</td>
+<td>2</td>
+</tr>
+<tr>
+<td>父类索引</td>
+<td>2</td>
+</tr>
+<tr>
+<td>接口个数</td>
+<td>2</td>
+</tr>
+<tr>
+<td>接口1…接口n</td>
+<td></td>
+</tr>
+<tr>
+<td>字段个数</td>
+<td>2</td>
+</tr>
+<tr>
+<td>字段1…字段n</td>
+<td></td>
+</tr>
+<tr>
+<td>方法个数</td>
+<td>2</td>
+</tr>
+<tr>
+<td>方法</td>
+<td>2</td>
+</tr>
+<tr>
+<td>方法1…方法n</td>
+<td></td>
+</tr>
+<tr>
+<td>属性个数</td>
+<td>2</td>
+</tr>
+<tr>
+<td>属性1..属性n</td>
+</tr>
+</tbody>
+</table>
+<p>其中常量、接口、字段、方法和属性在其中按各自的结构紧密排列，个数由其前面的数量字段决定。class文件是一组以8字节为基础单位的二进制流，格式采用一种类似于C语言结构体的伪结构来存储数据，这种伪结构中只有两种数据类型：无符号数和表。无符号数属于基本的数据类型，以u1、u2、u4、u8来分别代表1个字节、2个字节、4个字节和8个字节的无符号数，无符号数可以用来描述数字、索引引用、数量值或者按照UTF-8编码构成字符串值。表是由多个无符号数或者其他表作为数据项构成的复合数据类型，所有表都习惯地以”-info”结尾，表用于描述有层次关系的复合结构的数据，整个class文件本质上就是一张表。<br>下面依次介绍每个部分</p>
+<h2 id="魔数"><a href="#魔数" class="headerlink" title="魔数"></a>魔数</h2><p>魔数是用来确定文件的类型是否是class文件，因为只靠文件扩展名来确定文件类型并不可靠。这个魔数占整个文件的开始4个字节，为CA FE BA BE</p>
+<h2 id="版本号"><a href="#版本号" class="headerlink" title="版本号"></a>版本号</h2><p>接下来的4个字节为class文件版本号，其中前两个字节表示的是次版本号，后两个字节表示的是主版本号。高版本的JDK能向下兼容以前版本的class文件，但不能运行以后版本号的class文件。</p>
+<h2 id="常量池"><a href="#常量池" class="headerlink" title="常量池"></a>常量池</h2><p>紧接着主次版本号之后的是常量池入口，常量池可以理解为class文件之中的资源仓库。由于常量池中常量的数量是不固定的，所以在常量池的入口需要放置一项u2类型的数据，代表常量池容量计数值，class文件结构中只有常量池的容量计数是从1开始的，对于其他集合类型，包括接口集合类型，字段表集合，方法表集合等的容量计数都与一般习惯相同，是从0开始的。<br>常量池主要存放两大类常量：字面量和符号引用，字面量比较接近于Java语言层面的常量概念，如文本字符串，声明为final的常量值等，而符号引用则属于编译原理方面的概念，包含以下三类常量：类和接口的全限定名、字段的名称和描述符、方法的名称和描述符。一共有14中常量类型，有着各自对应的结构，但开始的一个字节同样都是表示标志位，用来区分不同的类型，下面是14中常量的具体类型和对应的标志位：<br><img src="https://note.youdao.com/favicon.ico" alt="image"><br>读取常量池的事后有首先读取标志位，判断常量类型，就可以知道对应的结构，获取对应的信息了</p>
+<h2 id="访问标志"><a href="#访问标志" class="headerlink" title="访问标志"></a>访问标志</h2><p>常量池之后，紧接着的两个字节代表访问标志，这个标志用于识别一些类或者接口层次的访问信息，包括：这个class是类还是接口；是否定义为public类型，是否定义为abstract类型，如果是类的话，是否被声明为final等</p>
+<h2 id="类索引"><a href="#类索引" class="headerlink" title="类索引"></a>类索引</h2><p>类索引占两个字节，分别指向常量池中的CONSTANT_Class_info类型的常量，用于确定这个类的全限定名</p>
+<h2 id="父类索引"><a href="#父类索引" class="headerlink" title="父类索引"></a>父类索引</h2><p>用于确定这个类的父类的全限定名</p>
+<h2 id="接口索引"><a href="#接口索引" class="headerlink" title="接口索引"></a>接口索引</h2><p>接口索引集合是一组u2类型的数据的集合，用来描述这个类实现了哪些接口，这些被实现的接口将按implements语句后的接口顺序从左到右排列在接口索引集合中，接口索引入口的第一项u2类型的数据为接口计数器，表示索引表的容量</p>
+<h2 id="字段"><a href="#字段" class="headerlink" title="字段"></a>字段</h2><p>字段用于描述接口或者类中声明的变量，包括类级变量以及实例变量，但不包括局部变量。字段域的开始两个字节表示字段数量，之后为紧密排列的字段结构体数据，其结构如下：</p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>字节数</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>access_flags</td>
+<td>2</td>
+<td>访问标志</td>
+</tr>
+<tr>
+<td>name_index</td>
+<td>2</td>
+<td>字段的简单名称</td>
+</tr>
+<tr>
+<td>description_index</td>
+<td>2</td>
+<td>字段和方法的描述符</td>
+</tr>
+</tbody>
+</table>
+<p>其中的字段和方法的描述符，对于字段来说用来描述字段的数据类型；而对于方法来说，描述的就是方法的参数列表和返回值，这个描述顺序也是固定的，必须是参数列表在前，返回值在后，参数列表必须放在一组小括号内，同时为了节省空间，各种数据类型都使用规定的一个字母来表示</p>
+<table>
+<thead>
+<tr>
+<th>标志字符</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B</td>
+<td>byte</td>
+</tr>
+<tr>
+<td>C</td>
+<td>char</td>
+</tr>
+<tr>
+<td>D</td>
+<td>double</td>
+</tr>
+<tr>
+<td>F</td>
+<td>float</td>
+</tr>
+<tr>
+<td>I</td>
+<td>int</td>
+</tr>
+<tr>
+<td>J</td>
+<td>long</td>
+</tr>
+<tr>
+<td>S</td>
+<td>short</td>
+</tr>
+<tr>
+<td>Z</td>
+<td>boolean</td>
+</tr>
+<tr>
+<td>V</td>
+<td>void</td>
+</tr>
+<tr>
+<td>L</td>
+<td>对象类型</td>
+</tr>
+<tr>
+<td>[</td>
+<td>数组</td>
+</tr>
+</tbody>
+</table>
+<p>对于数组类型，每一个纬度将使用一个前置的“【”字符来描述，</p>
+<h2 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h2><p>class文件存储格式中对方法的描述与对字段的描述几乎采用了完全一致的方式，唯一的区别就是访问类型不完全一致</p>
+<h2 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h2><p>在class文件，字段表，方法表都可以携带自己的属性表集合，以用于描述某些场景专有的信息，对于每个属性的结构，没有特别严格的要求，并且可以自定义属性信息，jvm运行时会忽略不认识的属性，符合规定的属性表结构如下：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>名称</th>
+<th>数量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>u2</td>
+<td>attribute_name_index</td>
+<td>1</td>
+</tr>
+<tr>
+<td>u4</td>
+<td>attrribute_length</td>
+<td>1</td>
+</tr>
+<tr>
+<td>u1</td>
+<td>info</td>
+<td>attribute_length</td>
+</tr>
+</tbody>
+</table>
+
+          
+        
+      
+    </div>
+    
+    
+    
+	
+	<div>
+    
+    </div>
+
+	<div>
+      
+    </div>
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://bryancrash.site/2018/04/05/虚拟机性能监控工具/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="bryan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/image/bryan.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="林距离">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/04/05/虚拟机性能监控工具/" itemprop="url">虚拟机性能监控工具</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-05T12:21:15+08:00">
+                2018-04-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java虚拟机/" itemprop="url" rel="index">
+                    <span itemprop="name">-Java虚拟机</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-comment-o"></i>
+              </span>
+              
+                <a href="/2018/04/05/虚拟机性能监控工具/#SOHUCS" itemprop="discussionUrl">
+                  <span id="url::http://bryancrash.site/2018/04/05/虚拟机性能监控工具/" class="cy_cmt_count" data-xid="2018/04/05/虚拟机性能监控工具/" itemprop="commentsCount" ></span>
+                </a>
+              
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2,279
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  8
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>   给一个系统定位问题的时候，知识，经验是关键基础，数据是依据，工具是运用知识处理数据的手段，这里说的数据包括：运行日志、异常堆栈、GC日志、线程快照、堆转储快照等。在jdk的bin目录下面有一些命令行工具，这些工具都是jdk/lib/tools.jar类库的一层薄包装，它们主要的功能代码是在tools类库中实现的。JDK开发团队选择采用Java代码实现这些监控工具是有特别用意的：当应用程序部署到生产环境后，无论是直接接触物理服务器还是远程Telnet到服务器上都可能会受到限制，借助tools.jar类库里面的接口，我们可以直接在应用程序中实现功能强大的监控分析功能。</p>
+<h3 id="jps-虚拟机进程状况工具"><a href="#jps-虚拟机进程状况工具" class="headerlink" title="jps:虚拟机进程状况工具"></a>jps:虚拟机进程状况工具</h3><p>   可以列出正在运行的虚拟机进程，并显示虚拟机执行主类（Main Class,main()函数所在的类）名称以及这些进程的本地虚拟机唯一ID<br>   jps命令格式 jps [options] [hostid]<br>   jps可以通过RMI协议开启了RMI服务的远程虚拟机进程状态，hostid为RMI注册表中注册的主机名。<br>jps工具主要选项<br>选项 作用<br>-q 只输出LVMID，省略主类的名称<br>-m 输出虚拟机进程启动时传递给主类main（）函数的参数<br>-l 输出主类的全名，如果进程执行的是jar包，输出jar路径<br>-v 输出虚拟机进程启动时jvm参数</p>
+<h3 id="jstat：虚拟机统计信息监视工具"><a href="#jstat：虚拟机统计信息监视工具" class="headerlink" title="jstat：虚拟机统计信息监视工具"></a>jstat：虚拟机统计信息监视工具</h3><p>  用于显示监控虚拟机各种运行状态信息的命令行工具。他可以显示本地或者远程虚拟机进程中的类装载、内存、垃圾收集、JIT编译等运行数据。<br>jstat命令格式：jstat [option vmid [interval [s|ms] [count]] ]<br>对于命令格式中的VMID和LVMID，如过是本地虚拟机进程，VMID和LVMID是一致的，如果是远程虚拟机，那VMID的格式应当是：[protocol:] [//] lvmid[@hostname[:port]/servername].<br>参数inteval和count代表查询间隔和次数，如果省略这两个参数，说明只查询一次，假设需要每250毫秒查询一次进程2764垃圾收集状况，一共查询20次，那命令应当是<br>jstat -gc 2764 250 20<br>选项option代表着用户希望查询的虚拟机信息，主要分为3类：类装载，垃圾回收，运行期编译状况<br>​<br>jstat工具主要选项<br>选项 作用<br>-class 监视装载类、卸载类、总空间以及类装载所耗费的时间<br>-gc 监视java堆状况，包括eden区、两个survivor区、老年代、永久代等的容量、已用空间、GC时间合计信息<br>-gccapacity 监视内容与-gc基本相同，但输出主要关注java堆各个区域使用到最大、最小空间<br>-gcutil 监视内容与-gc基本相同，但输出主要关注已使用控件占总空间的百分比<br>-gccause 与-gcutil功能一样，但是会额外输出导致上一次gc产生的原因<br>-gcnew 监视新生代GC情况<br>-gcnewcapacity 监视内容与-gcnew基本相同，输出主要关注使用到的最大、最小空间<br>-gcold 监视老年代GC情况<br>-gcoldcapacity 监视内容与-gcold基本相同，输出主要关注使用到的最大、最小空间<br>-gcpermcapacity 输出永久代使用到的最大、最小空间<br>-compiler 输出JIT编译过的方法、耗时等信息<br>-printcompilation 输出已经被JIT编译过的方法</p>
+<h3 id="jinfo：java配置信息工具"><a href="#jinfo：java配置信息工具" class="headerlink" title="jinfo：java配置信息工具"></a>jinfo：java配置信息工具</h3><p>jinfo的作用是实时地查看和调整虚拟机各项参数，使用jps命令的-v参数可以查看虚拟机启动时显示指定的参数列表，但如果想知道未被指定的参数系统默认值，但如果想知道未被显示指定的参数的系统默认值，除了去查找资料，就只能使用jinfo的-flag选项进行查询了，jinfo还可以使用-sysprops选项把虚拟机进程的System.getProperties()的内容打印出来<br>jinfo命令格式：jinfo[option] pid</p>
+<h3 id="jmap-Java内存映像工具"><a href="#jmap-Java内存映像工具" class="headerlink" title="jmap:Java内存映像工具"></a>jmap:Java内存映像工具</h3><p>jmap命令用于生成堆转储快照。jmap的作用并不仅仅为了获取dump文件，它还可以查询finalize执行队列、java堆和永久代的详细信息。如空间使用率、当前用的是哪种收集器等。<br>和jinfo命令一样，jmap在windows下也受到比较大的限制。除了生成dump文件的-dump选项和用于查看每个类的实例、控件占用统计的-histo选项在所有操作系用都提供之外，其余选项只能在linux/solaris下使用。<br>jmap格式 jmap [option] vmid<br>选项 作用<br>-dump 生成java堆转储快照。格式为： -dump:[live,]format=b,file=,其中live子参数说明是否只dump出存活的对象<br>-finalizerinfo 显示在F-Queue中等待Finalizer线程执行finalize方法的对象。只在Linux/Solaris平台下有效<br>-heap 显示java堆详细信息，如使用哪种收集器、参数配置、分代情况等，在Linux/Solaris平台下有效<br>-jisto 显示堆中对象统计信息，包含类、实例对象、合集容量<br>-permstat 以ClassLoader为统计口径显示永久代内存状态。只在Linux/Solaris平台下有效<br>-F 当虚拟机进程对-dump选项没有相应时。可使用这个选项强制生成dump快照。只在Linux/Solaris平台下有效</p>
+<h3 id="jhat：虚拟机堆转储快照分析工具"><a href="#jhat：虚拟机堆转储快照分析工具" class="headerlink" title="jhat：虚拟机堆转储快照分析工具"></a>jhat：虚拟机堆转储快照分析工具</h3><p>Sun JDK提供jhat命令与jmap搭配使用，来分析jmap生成的堆转储快照，jhat内置了一个微型的HTTP/HTML服务器，生成dump文件的分析结果后，可以在浏览器中查看。<br>用法举例: jhat test1.bin<br>test1.bin为生成的dump文件。<br>屏幕显示“Server is ready.”的提示后，用户在浏览器中键入<a href="http://localhost:7000就可以看到分析的结果了。" target="_blank" rel="external">http://localhost:7000就可以看到分析的结果了。</a><br>分析结果默认是以包围单位进行分组显示，分析内存泄漏问题主要会使用到其中的“Heap Histogram”与OQL标签的功能。前者可以找到内存中总容量最大的对象。后者是标准的对象查询语言，使用类似SQL的语法对内存中的对象进行查询统计。</p>
+<h3 id="jstack-Java堆栈跟踪工具"><a href="#jstack-Java堆栈跟踪工具" class="headerlink" title="jstack:Java堆栈跟踪工具"></a>jstack:Java堆栈跟踪工具</h3><p>jstack命令用于生成虚拟机当前时刻的线程快照（一般称为threaddump或者javacore文件）。线程快照就是当前虚拟机内每一条线程正在执行的方法堆栈的集合，生成线程快照的主要目的是定位线程出现长时间停顿的原因，如线程死锁、死循环、请求外部资源导致的长时间等待都是导致线程长时间停顿的常见原因，线程出现停顿的时候通过jstack来查看各个线程的调用堆栈，就可以知道没有响应的线程到底在后台做什么事情，或者等待着什么资源<br>jstack命令格式：jstack [option] vmid<br>jstack工具主要选型<br>选项 作用<br>-F 当正常输出的请求不被响应时，强制输出线程堆栈<br>-l 除堆栈外，显示关于锁的附加信息<br>-m 如果调用到本地方法的话，可以显示c/c++的堆栈<br>在JDK1.5中，java.lang.Thread类新增了一个getAllstackTraces（）方法用于获取虚拟机中所有线程的StackTraceElement对象。使用这个方法可以通过简单的几行代码就完成jstack的大部分功能，在实际项目中可以调用这个方法做个管理员页面</p>
+<h3 id="JDK的可视化工具"><a href="#JDK的可视化工具" class="headerlink" title="JDK的可视化工具"></a>JDK的可视化工具</h3><p>JDK中除了提供大量的命令行工具外，还有两个功能强大的可视化工具：JConsole和VisualVM。<br>JConsole<br>JConsole工具在JDK/bin目录下，启动JConsole后，将自动搜索本机运行的jvm进程，不需要jps命令来查询指定。双击其中一个jvm进程即可开始监控，也可使用“远程进程”来连接远程服务器。<br>VisualVM：多合一故障处理工具<br>VisualVM是一个集成多个JDK命令行工具的可视化工具。VisualVM基于NetBeans平台开发，它具备了插件扩展功能的特性，通过插件的扩展，可用于显示虚拟机进程及进程的配置和环境信息(jps，jinfo)，监视应用程序的CPU、GC、堆、方法区及线程的信息(jstat、jstack)等。VisualVM在JDK/bin目录下。<br>VisualVM的性能分析功能甚至比起JProfiler、YourKit等专业且收费的Profiling工具都不会逊色多少，而且VisualVM还有一个很大的优点：不需要被监视的程序基于特殊Agent运行，因此它对应用程序的实际性能的影响很小，使得它可以直接应用在生产环境中。这个优点是JProfiler、YourKit等工具无法与之媲美的。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+	
+	<div>
+    
+    </div>
+
+	<div>
+      
+    </div>
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://bryancrash.site/2018/04/05/垃圾收集器/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="bryan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/image/bryan.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="林距离">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/04/05/垃圾收集器/" itemprop="url">垃圾收集器</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-05T12:19:42+08:00">
+                2018-04-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java虚拟机/" itemprop="url" rel="index">
+                    <span itemprop="name">-Java虚拟机</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-comment-o"></i>
+              </span>
+              
+                <a href="/2018/04/05/垃圾收集器/#SOHUCS" itemprop="discussionUrl">
+                  <span id="url::http://bryancrash.site/2018/04/05/垃圾收集器/" class="cy_cmt_count" data-xid="2018/04/05/垃圾收集器/" itemprop="commentsCount" ></span>
+                </a>
+              
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  8,599
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  31
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>说起垃圾收集（Garbage Collection，下文简称GC），大部分人都把这项技术当做Java语言的伴生产物。事实上GC的历史远远比Java来得久远，在1960年诞生于MIT的Lisp是第一门真正使用内存动态分配和垃圾收集技术的语言。当Lisp还在胚胎时期，人们就在思考GC需要完成的3件事情：哪些内存需要回收？什么时候回收？怎么样回收？</p>
+<p>我们为什么需要了解GC和内存分配呢，答案很简单：当需要排查各种内存溢出、内存泄漏问题时，当垃圾收集成为系统达到更高并发量的瓶颈时，我们就需要对这些“自动化”的技术实施必要的监控和调节。Java内存运行时区域的各个部分，其中程序计数器、虚拟机栈、本地方法栈3个区域随线程生，随线程而灭，所以这几个区域的内存分配和回收都具备确定性，因此在这几个区域不需要过多考虑回收的问题。而Java堆和方法区（包括运行时常量池）则不一样，我们必须等到程序实际运行期间才能知道会创建哪些对象，这部分内存的分配和回收都是动态的，我们本文后续讨论中的“内存”分配与回收仅仅指这一部分内存。</p>
+<h3 id="对象已死吗？"><a href="#对象已死吗？" class="headerlink" title="对象已死吗？"></a>对象已死吗？</h3><p>​       在堆里面存放着Java世界中几乎所有的对象，在回收前首先要确定这些对象之中哪些还在存活，哪些已经“死去”了，即不可能再被任何途径使用的对象。 </p>
+<p>引用计数算法（Reference Counting） </p>
+<h3 id="引用计数算法"><a href="#引用计数算法" class="headerlink" title="引用计数算法"></a>引用计数算法</h3><p>　　最初的想法，也是很多教科书判断对象是否存活的算法是这样的：给对象中添加一个引用计数器，当有一个地方引用它，计数器加1，当引用失效，计数器减1，任何时刻计数器为0的对象就是不可能再被使用的。 </p>
+<p>　　客观的说，引用计数算法实现简单，判定效率很高，在大部分情况下它都是一个不错的算法，但引用计数算法无法解决对象循环引用的问题。举个简单的例子：对象A和B分别有字段b、a，令A.b=B和B.a=A，除此之外这2个对象再无任何引用，那实际上这2个对象已经不可能再被访问，但是引用计数算法却无法回收他们。 </p>
+<h3 id="可达性分析算法（GC-Roots-Tracing）"><a href="#可达性分析算法（GC-Roots-Tracing）" class="headerlink" title="可达性分析算法（GC Roots Tracing）"></a>可达性分析算法（GC Roots Tracing）</h3><p>​      在实际生产的语言中（Java、C#、甚至包括前面提到的Lisp），都是使用根搜索算法判定对象是否存活。算法基本思路就是通过一系列的称为“GC Roots”的点作为起始进行向下搜索，当一个对象到GC Roots没有任何引用链（Reference Chain）相连，则证明此对象是不可用的。在Java语言中，GC Roots包括： </p>
+<p>　1.在VM栈（帧中的本地变量）中的引用 </p>
+<p>　2.方法区中的静态引用 </p>
+<p>  3.方法区中常量引用的对象</p>
+<p>　 4.JNI（即一般说的Native方法）中的引用 </p>
+<h3 id="再谈引用"><a href="#再谈引用" class="headerlink" title="再谈引用"></a>再谈引用</h3><p>​    Java中的引用的定义很传统：如果reference类型数据中存储的数值代表的是另外一块内存的起始地址，就称这块内存代表着一个引用。但是我们希望能描述这样一类对象：当内存空间还足够时，则能保留在内存之中；如果内存空间在进行垃圾收集后还是非常紧张，则可以抛弃这些对象，很多系统的缓存功能都符合这样的应用场景。</p>
+<h3 id="引用又分为强引用，软应用，弱引用，虚应用4种："><a href="#引用又分为强引用，软应用，弱引用，虚应用4种：" class="headerlink" title="引用又分为强引用，软应用，弱引用，虚应用4种："></a>引用又分为强引用，软应用，弱引用，虚应用4种：</h3><p>强引用</p>
+<p>在一般的Java 程序中，见到最多的就是强引用（strong reference）。如Date date = new Date()，date 就是一个对象的强引用。对象的强引用可以在程序中到处传递。很多情况下，会同时有多个引用指向同一个对象。强引用的存在限制了对象在内存中的存活时间。假如对象A 中包含了一个对象B 的强引用，那么一般情况下，对象B 的存活时间就不会短于对象A。如果对象A 没有显式的把对象B 的引用设为null 的话，就只有当对象A 被垃圾回收之后，对象B 才不再有引用指向它，才可能获得被垃圾</p>
+<p>回收的机会。</p>
+<p>除了强引用之外，java.lang.ref 包中提供了对一个对象的不同的引用方式。JVM 的垃圾回收器对于不同类型的引用有不同的处理方式。</p>
+<p>软引用</p>
+<p>软引用（soft reference）在强度上弱于强引用，通过类SoftReference来表示。它的作用是告诉垃圾回收器，程序中的哪些对象是不那么重要，当内存不足的时候是可以被暂时回收的。当JVM中的内存不足的时候，垃圾回收器会释放那 些只被软引用所指向的对象。如果全部释放完这些对象之后，内存还不足，才会抛出OutOfMemory错误。软引用非常适合于创建缓存。当系统内存不足的时候，缓存中的内容是可以被释放的。比如考虑一个图像编辑器的程序。该程序会把图像文件的全部内容都读取到内存中，以方便进行处理。而用户也可以同时打开 多个文件。当同时打开的文件过多的时候，就可能造成内存不足。如果使用软引用来指向图像文件内容的话，垃圾回收器就可以在必要的时候回收掉这些内存。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line">public class ImageData &#123;</div><div class="line"></div><div class="line">private String path;</div><div class="line"></div><div class="line">private SoftReference&lt;byte[]&gt; dataRef;</div><div class="line"></div><div class="line">public ImageData(String path) &#123;</div><div class="line"></div><div class="line">this.path = path;</div><div class="line"></div><div class="line">dataRef = new SoftReference&lt;byte[]&gt;(new byte[0]);</div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line">private byte[] readImage() &#123;</div><div class="line"></div><div class="line">return new byte[1024 * 1024]; //省略了读取文件的操作</div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line">public byte[] getData() &#123;</div><div class="line"></div><div class="line">byte[] dataArray = dataRef.get();</div><div class="line"></div><div class="line">if (dataArray == null || dataArray.length == 0) &#123;</div><div class="line"></div><div class="line">dataArray = readImage();</div><div class="line"></div><div class="line">dataRef = new SoftReference&lt;byte[]&gt;(dataArray);</div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line">return dataArray;</div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>在运行上面程序的时候，可以使用 -Xmx 参数来限制JVM可用的内存。由于软引用</p>
+<p>所指向的对象可能被回收掉，在通过get方法来获取软引用所实际指向的对象的时</p>
+<p>候，总是要检查该对象是否还存活。</p>
+<p>弱引用</p>
+<p>弱引用（weak reference）在强度上弱于软引用，通过类WeakReference来 表示。它的作用是引用一个对象，但是并不阻止该对象被回收。如果使用一个强引用的话，只要该引用存在，那么被引用的对象是不能被回收的。弱引用则没有这个问题。在垃圾回收器运行的时候，如果一个对象的所有引用都是弱引用的话，该对象会被回收。弱引用的作用在于解决强引用所带来的对象之间在存活时间上的耦合关系。弱引用最常见的用处是在集合类中，尤其在哈希表中。哈希表的接口允许使用任何Java对象作为键来使用。当一个键值对被放入到哈希表中之后，哈希表 对象本身就有了对这些键和值对象的引用。如果这种引用是强引用的话，那么只要哈希表对象本身还存活，其中所包含的键和值对象是不会被回收的。如果某个存活 时间很长的哈希表中包含的键值对很多，最终就有可能消耗掉JVM中全部的内存。对于这种情况的解决办法就是使用弱引用来引用这些对象，这样哈希表中的键和值对象都能被垃圾回收。Java中提供了WeakHashMap来满足这一常见需求。</p>
+<p>虚应用</p>
+<p>在介绍幽灵引用之前，要先介绍Java提供的对象终止化机制（finalization）。在Object类里面有个finalize方法，其设计的初衷是在一个对象被真正回收之前，可以用来执行一些清理的工作。因为Java并没有提供类似C++的析构函数一样的机制，就通过finalize方法来实现。但是问题在于垃圾回收器的运行时间是不固定的，所以这些清理工作的实际运行时间也是不能预知的。幽灵引用（phantom reference）可以解决这个问题。在创建幽灵引用PhantomReference的时候必须要指定一个引用队列。当一个对象的finalize方法已经被调用了之后，这个对象的幽灵引用会被加入到队列中。通过检查该队列里面的内容就知道一个对象是不是已经准备要被回收了。幽灵引用及其队列的使用情况并不多见，主要用来实现比较精细的内存使用控制，这对于移动设备来说是很有意义的。程序可以在确定一个对象要被回收之后，再申请内存创建新的对象。通过这种方式可以使得程序所消耗的内存维持在一个相对较低的数量。比如下面的代码给出了一个缓冲区的实现示例。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div></pre></td><td class="code"><pre><div class="line">public class PhantomBuffer &#123;</div><div class="line"></div><div class="line">private byte[] data = new byte[0];</div><div class="line"></div><div class="line">private ReferenceQueue&lt;byte[]&gt; queue = new ReferenceQueue&lt;byte[]&gt;();</div><div class="line"></div><div class="line">private PhantomReference&lt;byte[]&gt; ref = new</div><div class="line"></div><div class="line">PhantomReference&lt;byte[]&gt;(data, queue);</div><div class="line"></div><div class="line">public byte[] get(int size) &#123;</div><div class="line"></div><div class="line">if (size &lt;= 0) &#123;</div><div class="line"></div><div class="line">throw new IllegalArgumentException(&quot;Wrong buffer size&quot;);</div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line">if (data.length &lt; size) &#123;</div><div class="line"></div><div class="line">data = null;</div><div class="line"></div><div class="line">System.gc(); //强制运行垃圾回收器</div><div class="line"></div><div class="line">try &#123;</div><div class="line"></div><div class="line">queue.remove(); //该方法会阻塞直到队列非空</div><div class="line"></div><div class="line">ref.clear(); //幽灵引用不会自动清空，要手动运行</div><div class="line"></div><div class="line">ref = null;</div><div class="line"></div><div class="line">data = new byte[size];</div><div class="line"></div><div class="line">ref = new PhantomReference&lt;byte[]&gt;(data, queue);</div><div class="line"></div><div class="line">&#125; catch (InterruptedException e) &#123;</div><div class="line"></div><div class="line">e.printStackTrace();</div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line">return data;</div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="生存还是死亡？"><a href="#生存还是死亡？" class="headerlink" title="生存还是死亡？"></a>生存还是死亡？</h3><p>　  判定一个对象死亡，至少经历两次标记过程：如果对象在进行根搜索后，发现没有与GC Roots相连接的引用链，那它将会被第一次标记，并在稍后执行他的finalize()方法（如果它有的话）。这里所谓的“执行”是指虚拟机会触发这个方法，但并不承诺会等待它运行结束。这点是必须的，否则一个对象在finalize()方法执行缓慢，甚至有死循环什么的将会很容易导致整个系统崩溃。finalize()方法是对象最后一次逃脱死亡命运的机会，稍后GC将进行第二次规模稍小的标记，如果在finalize()中对象成功拯救自己（只要重新建立到GC Roots的连接即可，譬如把自己赋值到某个引用上），那在第二次标记时它将被移除出“即将回收”的集合，如果对象这时候还没有逃脱，那基本上它就真的离死不远了。</p>
+<p>  建议大家尽量避免使用它，这个不是C/C++里面的析构函数，它运行代价高昂，不确定性大，无法保证各个对象的调用顺序。需要关闭外部资源之类的事情，基本上它能做的使用try-finally可以做的更好。 </p>
+<h3 id="回收方法区"><a href="#回收方法区" class="headerlink" title="回收方法区"></a>回收方法区</h3><p>​     方法区即后文提到的永久代，很多人认为永久代是没有GC的，《Java虚拟机规范》中确实说过可以不要求虚拟机在这区实现GC，而且这区GC的“性价比”一般比较低：在堆中，尤其是在新生代，常规应用进行一次GC可以一般可以回收70%~95%的空间，而永久代的GC效率远小于此。虽然VM Spec不要求，但当前生产中的商业JVM都有实现永久代的GC，主要回收两部分内容：废弃常量与无用类。这两点回收思想与Java堆中的对象回收很类似，都是搜索是否存在引用，常量的相对很简单，与对象类似的判定即可。而类的回收则比较苛刻，需要满足下面3个条件：</p>
+<p>​   1.该类所有的实例都已经被GC，也就是JVM中不存在该Class的任何实例。 </p>
+<p>　 2.加载该类的ClassLoader已经被GC。 </p>
+<p>　 3.该类对应的java.lang.Class 对象没有在任何地方被引用，如不能在任何地方通过反射访问该类的方法。</p>
+<p>​     是否对类进行回收可使用-XX:+ClassUnloading参数进行控制，还可以使用-verbose:class或者-XX:+TraceClassLoading、-XX:+TraceClassUnLoading查看类加载、卸载信息。 </p>
+<p>​     在大量使用反射、动态代理、CGLib等bytecode框架、动态生成JSP以及OSGi这类频繁自定义ClassLoader的场景都需要JVM具备类卸载的支持以保证永久代不会溢出。 </p>
+<h3 id="垃圾收集算法"><a href="#垃圾收集算法" class="headerlink" title="垃圾收集算法"></a>垃圾收集算法</h3><p>​     标记-清除算法</p>
+<p>​     最基础的收集算法是“标记-清除”算法，算法分为“标记”和清除两个过程：首先标记出所有需要回收的对象，在标记完成以后统一回收所有被标记的对象。它的主要不足有两个：一个是效率问题，标记和清除是两个过程的效率都不高；另一个是空间问题，标记清除之后会产生大量不连续的内存碎片，内存碎片太多可能会导致以后在程序运行过程中需要分配较大对象时，无法找到足够的连续内存而不得不提前触发另一次垃圾收集动作。</p>
+<p>​      复制算法</p>
+<p>​      为了解决效率问题，一种称为“复制”的收集算法出现了 ，它将可用的内存按容量分为大小相等的两块，每次只使用其中的一块。当这一块内存用完了，就将还存活的对象复制到另外一块上面，然后再把已使用过的内存空间一次清理掉，这样使得每次都是对整个半区进行内存回收，内存分配时就不用考虑内存碎片等复杂过程，只要移动指针，按书序分配内存即可，实现简单，运行高效。</p>
+<p>​      现在的商业虚拟机中都是用了这一种收集算法来回收新生代，IBM有专门研究表明新生代中的对象98%是朝生夕死的，所以并不需要按照1：1的比例来划分内存空间，而是将内存分为一块较大的eden空间和2块较少的survivor空间，每次使用eden和其中一块survivor，当回收时将eden和survivor还存活的对象一次过拷贝到另外一块survivor空间上，然后清理掉eden和用过的survivor。Sun Hotspot虚拟机默认eden和survivor的大小比例是8:1，也就是每次只有10%的内存是“浪费”的。当然，98%的对象可回收只是一般场景下的数据，我们没有办法保证每次回收都只有10%以内的对象存活，当survivor空间不够用时，需要依赖其他内存（譬如老年代）进行分配担保（Handle Promotion）。</p>
+<p>​       标记-整理算法</p>
+<p>​       复制收集算法在对象存活率高的时候，效率有所下降。更关键的是，如果不想浪费50%的空间，就需要有额外的空间进行分配担保用于应付半区内存中所有对象都100%存活的极端情况，所以在老年代一般不能直接选用这种算法。因此人们提出另外一种“标记－整理”（Mark-Compact）算法，标记过程仍然一样，但后续步骤不是进行直接清理，而是令所有存活的对象一端移动，然后直接清理掉这端边界以外的内存。</p>
+<p>​      分代收集算法</p>
+<p>​      当前商业虚拟机的垃圾收集都是采用“分代收集”（Generational Collecting）算法，这种算法并没有什么新的思想出现，只是根据对象不同的存活周期将内存划分为几块。一般是把Java堆分作新生代和老年代，这样就可以根据各个年代的特点采用最适当的收集算法。在新生代中，每次垃圾收集时都发现有大批对象 死去，只要少量存活，那就选用复制算法，只需要少量存活对象的复制成本就可以完成收集，而老年代因为对象存活率高，没有额外空间对它进行分配担保，就必须使用“标记-清除”或者“标记-整理”算法来进行回收</p>
+<p>​      枚举根节点</p>
+<p>​      可作为GC Roots的节点主要在全局性的引用（例如常量或者静态属性）与执行上下文（例如栈帧中的本地变量表）中。在可达性分析对执行时间的敏感还体现在GC停顿上，因为这项分析工作必须在一个能确保一致性的快照中进行，这里“一致性”的意思是指在整个分析期间整个执行系统看起来就像被冻结在某个时间点上，不可以出现分析过程中对象引用关系还在不断变化的情况，该点不满足的话分析结果准确性就无法得到保证。所以在执行系统停顿下来后，并不需要一个不漏地检查完所有执行上下文和全局的引用位置，虚拟机应当是有办法直接得知哪些地方存放着对象引用。在HotSpot的实现中，是使用一组称为OopMap的数据结构来达到这个目的的。</p>
+<h3 id="安全点"><a href="#安全点" class="headerlink" title="安全点"></a>安全点</h3><p>​     实际上，HotSpot也的确没有为每条指令都生成OopMap，只是在特定的位置记录了这些信息，这些位置称为安全点（Safepoint），即程序执行时并非在所有的地方都能停下来开始GC，只有在到达安全点才能暂停。Safepoint的选定既不能太少以致于让GC等待时间太长，也不能频繁以致于过分增大运行时的负荷。所以，安全点的选定基本上是以程序“是否具有让程序长时间执行的特征”为标准进行选定的，“长时间执行”的最明显特征就是指令序列复用，例如方法调用、循环跳转、异常跳转等，所以具有这些功能的指令才会产生Safepoint</p>
+<p>​      对于Safepoint，另一个需要考虑的问题是如何在GC发生时让所有线程都跑到最近的安全点上再停顿下来，这里有两种方案可供选择：抢占式中断和主动式中断</p>
+<p>​      抢占式中断：在GC发生时，首先把所有线程全部中断，如果发现有线程中断的地方不在安全点上，就恢复线程，让它跑到安全点上。</p>
+<p>​      主动式中断：当GC需要中断线程的时候，不直接对线程操作，仅仅简单地设置一个标志，各个线程执行时主动去轮询这个标志，发现中断标志为真时就自己中断挂起。轮询标志的地方和安全点是重合的，另外再加上创建对象需要分配内存的地方</p>
+<h3 id="安全区域"><a href="#安全区域" class="headerlink" title="安全区域"></a>安全区域</h3><p>​     当线程处于Sleep状态或者Blocked状态，这时候线程无法响应JVM的中断请求，“走”到安全的地方中断挂起，JVM也显然不太可能等待线程重新被分配CPU时间，对于这种情况，就需要安全区域(Safe Rgion)来解决了。安全区域是指在一段代码片段之中，引用关系不会发生变化，在这个区域中国的任何地方 开始GC都是安全的，我们也可以把Safe Rgion看做是被扩展了的Safepoint</p>
+<h3 id="垃圾收集器"><a href="#垃圾收集器" class="headerlink" title="垃圾收集器"></a>垃圾收集器</h3><p>​      垃圾收集器就是收集算法的具体实现，不同的虚拟机会提供不同的垃圾收集器。并且提供参数供用户根据自己的应用特点和要求组合各个年代所使用的收集器     </p>
+<p><img src="http://p0c736231.bkt.clouddn.com/%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8.gif" alt=""></p>
+<p>   图中提供的6种作用于不同年代的收集器，两个收集器之间存在连线的话就说明它们可以搭配使用。在介绍着些收集器之前，我们先明确一个观点：没有最好的收集器，也没有万能的收集器，只有最合适的收集器。 </p>
+<p>一、 Serial（串行）垃圾收集器是最基本、发展历史最悠久的收集器；<br>​       JDK1.3.1前是HotSpot新生代收集的唯一选择；</p>
+<p>1、特点<br>​      针对新生代；<br>​      采用复制算法；<br>​      单线程收集；<br>​       进行垃圾收集时，必须暂停所有工作线程，直到完成；<br>​       即会”Stop The World”；<br>​      Serial/Serial Old组合收集器运行示意图如下：</p>
+<p><img src="http://p0c736231.bkt.clouddn.com/Serial.png" alt=""></p>
+<p>2、应用场景<br>​      依然是HotSpot在Client模式下默认的新生代收集器；<br>​      也有优于其他收集器的地方：<br>​      简单高效（与其他收集器的单线程相比）；<br>​      对于限定单个CPU的环境来说，Serial收集器没有线程交互（切换）开销，可以获得最高的单线程收集效率；<br>​      在用户的桌面应用场景中，可用内存一般不大（几十M至一两百M），可以在较短时间内完成垃圾收集（几十MS至一百多MS）,只要不频繁发生，这是可以接受的</p>
+<p>3、设置参数<br>​      “-XX:+UseSerialGC”：添加该参数来显式的使用串行垃圾收集器；</p>
+<p>二、ParNew收集器<br>ParNew垃圾收集器是Serial收集器的多线程版本。<br>1、特点<br>​      除了多线程外，其余的行为、特点和Serial收集器一样；<br>​      如Serial收集器可用控制参数、收集算法、Stop The World、内存分配规则、回收策略等；<br>​      两个收集器共用了不少代码；<br>​      ParNew/Serial Old组合收集器运行示意图如下：</p>
+<p><img src="http://p0c736231.bkt.clouddn.com/ParNew.png" alt=""></p>
+<p>2、应用场景<br>​      在Server模式下，ParNew收集器是一个非常重要的收集器，因为除Serial外，目前只有它能与CMS收集器配合工作；<br>​      但在单个CPU环境中，不会比Serail收集器有更好的效果，因为存在线程交互开销。</p>
+<p>3、设置参数<br>​      “-XX:+UseConcMarkSweepGC”：指定使用CMS后，会默认使用ParNew作为新生代收集器；<br>​      “-XX:+UseParNewGC”：强制指定使用ParNew；<br>​      “-XX:ParallelGCThreads”：指定垃圾收集的线程数量，ParNew默认开启的收集线程与CPU的数量相同；</p>
+<p>三、Parallel Scavenge收集器<br>Parallel Scavenge垃圾收集器因为与吞吐量关系密切，也称为吞吐量收集器（Throughput Collector）。</p>
+<p>1、特点</p>
+<p>（A）、有一些特点与ParNew收集器相似<br>​      新生代收集器；<br>​      采用复制算法；<br>​     多线程收集；<br>（B）、主要特点是：它的关注点与其他收集器不同<br>​      CMS等收集器的关注点是尽可能地缩短垃圾收集时用户线程的停顿时间；<br>​      而Parallel Scavenge收集器的目标则是达一个可控制的吞吐量（Throughput）；<br>​      关于吞吐量与收集器关注点说明详见本节后面；</p>
+<p>2、应用场景<br>​      高吞吐量为目标，即减少垃圾收集时间，让用户代码获得更长的运行时间；<br>​      当应用程序运行在具有多个CPU上，对暂停时间没有特别高的要求时，即程序主要在后台进行计算，而不需要与用户进行太多交互；<br>​      例如，那些执行批量处理、订单处理、工资支付、科学计算的应用程序；</p>
+<p>3、设置参数<br>​      Parallel Scavenge收集器提供两个参数用于精确控制吞吐量：<br>（A）、”-XX:MaxGCPauseMillis”<br>​      控制最大垃圾收集停顿时间，大于0的毫秒数；<br>​      MaxGCPauseMillis设置得稍小，停顿时间可能会缩短，但也可能会使得吞吐量下降；<br>​      因为可能导致垃圾收集发生得更频繁；</p>
+<p>（B）、”-XX:GCTimeRatio”<br>​      设置垃圾收集时间占总时间的比率，0&lt;n&lt;100的整数；<br>​     GCTimeRatio相当于设置吞吐量大小；<br>​      垃圾收集执行时间占应用程序执行时间的比例的计算方法是：<br>​      1 / (1 + n)<br>​      例如，选项-XX:GCTimeRatio=19，设置了垃圾收集时间占总时间的5%–1/(1+19)；<br>​      默认值是1%–1/(1+99)，即n=99；<br>垃圾收集所花费的时间是年轻一代和老年代收集的总时间；<br>如果没有满足吞吐量目标，则增加代的内存大小以尽量增加用户程序运行的时间；<br>​      此外，还有一个值得关注的参数：</p>
+<p>（C）、”-XX:+UseAdptiveSizePolicy”<br>​      开启这个参数后，就不用手工指定一些细节参数，如：<br>​      新生代的大小（-Xmn）、Eden与Survivor区的比例（-XX:SurvivorRation）、晋升老年代的对象年龄（-XX:PretenureSizeThreshold）等；<br>​      JVM会根据当前系统运行情况收集性能监控信息，动态调整这些参数，以提供最合适的停顿时间或最大的吞吐量，这种调节方式称为GC自适应的调节策略（GC Ergonomiscs）；    </p>
+<p>​      这是一种值得推荐的方式：<br>​      (1)、只需设置好内存数据大小（如”-Xmx”设置最大堆）；<br>​      (2)、然后使用”-XX:MaxGCPauseMillis”或”-XX:GCTimeRatio”给JVM设置一个优化目标；<br>​      (3)、那些具体细节参数的调节就由JVM自适应完成；<br>​      这也是Parallel Scavenge收集器与ParNew收集器一个重要区别；</p>
+<p>四、Serial Old收集器<br>Serial Old是 Serial收集器的老年代版本；</p>
+<p>1、特点<br>​      针对老年代；<br>​      采用”标记-整理”算法（还有压缩，Mark-Sweep-Compact）；<br>​      单线程收集；<br>​      Serial/Serial Old收集器运行示意图如下：</p>
+<p><img src="http://p0c736231.bkt.clouddn.com/Serial%20Old.png" alt=""></p>
+<p>2、应用场景<br>​      主要用于Client模式；<br>​      而在Server模式有两大用途：<br>​      （A）、在JDK1.5及之前，与Parallel Scavenge收集器搭配使用（JDK1.6有Parallel Old收集器可搭配）；<br>​      （B）、作为CMS收集器的后备预案，在并发收集发生Concurrent Mode Failure时使用</p>
+<p>五、Parallel Old收集器<br>Parallel Old垃圾收集器是Parallel Scavenge收集器的老年代版本；<br>​      JDK1.6中才开始提供；</p>
+<p>1特点<br>​      针对老年代；<br>​      采用”标记-整理”算法；<br>​      多线程收集；<br>​      Parallel Scavenge/Parallel Old收集器运行示意图如下：</p>
+<p><img src="http://p0c736231.bkt.clouddn.com/Parallel%20Old.png" alt=""></p>
+<p>2、应用场景<br>​      JDK1.6及之后用来代替老年代的Serial Old收集器；<br>​      特别是在Server模式，多CPU的情况下；<br>​      这样在注重吞吐量以及CPU资源敏感的场景，就有了Parallel Scavenge加Parallel Old收集器的”给力”应用组合；</p>
+<p>3、设置参数<br>​      “-XX:+UseParallelOldGC”：指定使用Parallel Old收集器；</p>
+<p>六、CMS收集器<br>并发标记清理（Concurrent Mark Sweep，CMS）收集器也称为并发低停顿收集器（Concurrent Low Pause Collector）或低延迟（low-latency）垃圾收集器；<br>​      在前面ParNew收集器曾简单介绍过其特点；</p>
+<p>1、特点<br>​      针对老年代；<br>​      基于”标记-清除”算法(不进行压缩操作，产生内存碎片)；<br>​      以获取最短回收停顿时间为目标；<br>​      并发收集、低停顿；<br>​      需要更多的内存（看后面的缺点）</p>
+<p>2、应用场景<br>​      与用户交互较多的场景；<br>​      希望系统停顿时间最短，注重服务的响应速度；<br>​      以给用户带来较好的体验；<br>​      如常见WEB、B/S系统的服务器上的应用；</p>
+<p>3、设置参数<br>​      “-XX:+UseConcMarkSweepGC”：指定使用CMS收集器；</p>
+<p> CMS收集器运行示意图如下：</p>
+<p><img src="http://p0c736231.bkt.clouddn.com/CMS.png" alt=""></p>
+<p>七、G1收集器</p>
+<p>G1（Garbage-First）是JDK7-u4才推出商用的收集器；</p>
+<p>1、特点<br>（A）、并行与并发</p>
+<p>​      能充分利用多CPU、多核环境下的硬件优势；<br>​      可以并行来缩短”Stop The World”停顿时间；<br>​      也可以并发让垃圾收集与用户程序同时进行；</p>
+<p>（B）、分代收集，收集范围包括新生代和老年代 ， 能独立管理整个GC堆（新生代和老年代），而不需要与其他收集器搭配；</p>
+<p>​      能够采用不同方式处理不同时期的对象；<br>​      虽然保留分代概念，但Java堆的内存布局有很大差别；<br>​      将整个堆划分为多个大小相等的独立区域（Region）；<br>​      新生代和老年代不再是物理隔离，它们都是一部分Region（不需要连续）的集合；<br>​      更多G1内存布局信息请参考：</p>
+<p>（C）、结合多种垃圾收集算法，空间整合，不产生碎片</p>
+<p>​      从整体看，是基于标记-整理算法；<br>​      从局部（两个Region间）看，是基于复制算法；<br>​      这是一种类似火车算法的实现；<br>​      都不会产生内存碎片，有利于长时间运行；</p>
+<p>（D）、可预测的停顿：低停顿的同时实现高吞吐量<br>​      G1除了追求低停顿处，还能建立可预测的停顿时间模型；<br>​      可以明确指定M毫秒时间片内，垃圾收集消耗的时间不超过N毫秒；</p>
+<p>2、应用场景</p>
+<p>​      面向服务端应用，针对具有大内存、多处理器的机器；<br>​      最主要的应用是为需要低GC延迟，并具有大堆的应用程序提供解决方案；<br>​      如：在堆大小约6GB或更大时，可预测的暂停时间可以低于0.5秒；        </p>
+<p>​      用来替换掉JDK1.5中的CMS收集器；<br>​      在下面的情况时，使用G1可能比CMS好：<br>​      （1）、超过50％的Java堆被活动数据占用；<br>​      （2）、对象分配频率或年代提升频率变化很大；<br>​      （3）、GC停顿时间过长（长于0.5至1秒）。<br>​      是否一定采用G1呢？也未必：<br>​      如果现在采用的收集器没有出现问题，不用急着去选择G1；<br>​      如果应用程序追求低停顿，可以尝试选择G1；<br>​      是否代替CMS需要实际场景测试才知道。</p>
+<p>3、设置参数<br>​      “-XX:+UseG1GC”：指定使用G1收集器；<br>​      “-XX:InitiatingHeapOccupancyPercent”：当整个Java堆的占用率达到参数值时，开始并发标记阶段；默认为45；<br>​      “-XX:MaxGCPauseMillis”：为G1设置暂停时间目标，默认值为200毫秒；<br>​      “-XX:G1HeapRegionSize”：设置每个Region大小，范围1MB到32MB；目标是在最小Java堆时可以拥有约2048个Region； </p>
+<p>垃圾收集器参数总结</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UseSerialGC</td>
+<td>虚拟机运行在Client模式下的默认值，打开此开关后，使用Serial+Serial Old的收集器组合进行内存回收</td>
+</tr>
+<tr>
+<td>UseParNewGC</td>
+<td>打开此开关后，使用ParNew+Serial Old的收集器组合进行内存回收</td>
+</tr>
+<tr>
+<td>UseConcMarkSweepGC</td>
+<td>打开此开关后，使用ParNew+CMS+Serial Old的收集器组合进行内存回收。Serial Old收集器将作为CMS收集器出现Concurrent Mode Failure失败后的后备收集器使用</td>
+</tr>
+<tr>
+<td>UseParallelGC</td>
+<td>虚拟机运行在Server模式下的默认值，打开此开关后，使用Parallel Scavenge + Serial Old（PS MarkSweep）的收集器组合进行内存回收</td>
+</tr>
+<tr>
+<td>UseParallelOldGC</td>
+<td>打开此开关后，使用Parallel Scavenge + Parallel Old的收集器组合进行内存回收</td>
+</tr>
+<tr>
+<td>SurvivorRatio</td>
+<td>新生代中Eden区域与Survivor区域的容量比值，默认值为8，代表Eden：Survivor=8：1</td>
+</tr>
+<tr>
+<td>PretenureSizeThreshold</td>
+<td>直接晋升到老年代的对象大小，设置这个参数后，大于这个参数的对象将直接在老年代分配</td>
+</tr>
+<tr>
+<td>MaxTenuringThreshold</td>
+<td>晋升到老年代的对象年龄，每个对象在坚持过一次Minor GC之后，年龄就增加1，当超过这个参数时就进入老年代</td>
+</tr>
+<tr>
+<td>UseAdaptiveSizePolicy</td>
+<td>动态调整Java堆中各个区域的大小以及进入老年代的年龄</td>
+</tr>
+<tr>
+<td>HandlePromotionFailure</td>
+<td>是否允许分配担保失败，即老年代的剩余空间不足以应付新生代的整个Eden和Survivor区的所有对象都存活的极端情况</td>
+</tr>
+<tr>
+<td>ParallelGCThreads</td>
+<td>设置并行GC时进行内存回收的线程数</td>
+</tr>
+<tr>
+<td>GCTimeRatio</td>
+<td>GC时间占总时间的比率，默认值为99，即允许1%的GC时间。仅在使用Parallel Scavenge收集器时生效</td>
+</tr>
+<tr>
+<td>MaxGCPauseMillis</td>
+<td>设置GC的最大停顿时间，仅在使用Parallel Scavenge收集器时生效</td>
+</tr>
+<tr>
+<td>CMSInitingOccupancyFraction</td>
+<td>设置CMS收集器在老年代空间被使用多少后触发垃圾收集。默认值为68%，仅在使用CMS收集器时生效</td>
+</tr>
+</tbody>
+</table>
+<p>内存分配和回收策略<br>Java技术体系中所提倡的自动内存管理最终可以归结为自动化地解决了两个问题：给对象分配内存以及回收分配给对象的内存。对象的内存分配，往大方向讲，就是在堆上分配，对象主要分配在新生代的Eden区上，如果启动了本地线程分配缓存，将按线程优先在TLAB上分配。少数情况下可能直接分配在老年代中，分配的规则并不是百分之百固定的，其细节取决于当前使用的是哪一种垃圾收集器组合。</p>
+<p>以下是几条普遍的内存分配规则：<br>一、对象优先在Eden分配<br>二、大对象直接进入老年代<br>三、长期存活的对象将进入老年代        </p>
+<p>动态对象年龄判定<br>如果在Survivor空间中相同年龄所有对象大小的总和大于Survivor空间的一半，年龄大于或等于该年龄的对象就可以直接进入老年代，无须等到MaxTenuringThreshold中要求的年龄</p>
+<p>空间分配担保<br>在发生Minor GC之前，虚拟机会先检查老年代最大可用的连续空间是否大于新生代所有对象总空间，如果这个条件成立，那么Minor GC可以确保是安全的。如果不成立，则虚拟机会查看HandlePromotionFailure设置值是否允许担保失败。如果允许，那么会继续检查老年代最大可用的连续空间是否大于历次晋升到老年代对象的平均大小，如果大于，将尝试着进行一次Minor GC,尽管这次Minor GC是有风险的；如果小于，或者HandlePromotionFailure设置不允许冒险，那这时也要改为进行一次Full GC.                                                                                                              </p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+	
+	<div>
+    
+    </div>
+
+	<div>
+      
+    </div>
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://bryancrash.site/2018/04/05/实战OutOfMemoryError/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="bryan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/image/bryan.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="林距离">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/04/05/实战OutOfMemoryError/" itemprop="url">实战OutOfMemoryError</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-05T12:19:17+08:00">
+                2018-04-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java虚拟机/" itemprop="url" rel="index">
+                    <span itemprop="name">-Java虚拟机</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-comment-o"></i>
+              </span>
+              
+                <a href="/2018/04/05/实战OutOfMemoryError/#SOHUCS" itemprop="discussionUrl">
+                  <span id="url::http://bryancrash.site/2018/04/05/实战OutOfMemoryError/" class="cy_cmt_count" data-xid="2018/04/05/实战OutOfMemoryError/" itemprop="commentsCount" ></span>
+                </a>
+              
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2,147
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  9
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>在Java虚拟机规范的描述中，除了程序计数器外，虚拟机内存的其他几个运行时区域都有发生OutOfMemoryError异常的可能，下面就通过代码在对应的区域产生OOM异常，加深对相关区域的理解，同时初步介绍一些与内存相关的虚拟机参数。</p>
+<h3 id="Java堆"><a href="#Java堆" class="headerlink" title="Java堆"></a>Java堆</h3><p>Java堆用于存储对象实例，只要不断地创建对象，并且保证GC Roots到对象之间有可达路径来避免垃圾回收机制清除这些对象，那么在对象数量到达最大堆的容量限制后就会产生内存溢出异常。在实例中限制Java堆的大小为20MB，不可扩展（将堆的最小值-Xms参数与最大值-Xmx参数设置为一样即可避免堆自动扩展），通过参数-XX:+HeapDumpOnOfMemoryError可以让虚拟机在出现内存溢出异常时Dump出当前的内存堆转储快照以便事后进行分析</p>
+<p>代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"></div><div class="line"> * VM Args：-Xms20m -Xmx20m -XX:+HeapDumpOnOutOfMemoryError</div><div class="line"></div><div class="line"> * @author bryan</div><div class="line"></div><div class="line"> */</div><div class="line"></div><div class="line">public class HeapOOM &#123;</div><div class="line"></div><div class="line"> </div><div class="line"></div><div class="line">​       static class OOMObject &#123;</div><div class="line"></div><div class="line">​       &#125;</div><div class="line"></div><div class="line"> </div><div class="line"></div><div class="line">​       public static void main(String[] args) &#123;</div><div class="line"></div><div class="line">​              List&lt;OOMObject&gt; list = new ArrayList&lt;OOMObject&gt;();</div><div class="line"></div><div class="line"> </div><div class="line"></div><div class="line">​              while (true) &#123;</div><div class="line"></div><div class="line">​                     list.add(new OOMObject());</div><div class="line"></div><div class="line">​              &#125;</div><div class="line"></div><div class="line">​       &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>运行结果为<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">java.lang.OutOfMemoryError: Java heap space</div><div class="line"></div><div class="line">Dumping heap to java_pid5556.hprof ...</div><div class="line"></div><div class="line">Heap dump file created [28313503 bytes in 0.167 secs]</div></pre></td></tr></table></figure></p>
+<p>要解决这个区域的异常，一般的手段是先通过内存映像分析工具对Dump出来的堆转储快照进行分析，重点是确认内存中的对象是否必要的，也就是要先分析清楚到底是出现了内存泄漏还是内存溢出</p>
+<p>如果是内存泄漏，可进一步通过工具查看泄漏对象到GC Roots的引用链，于是就能找到泄漏对象是通过怎么的路径与GC Roots相关联并导致垃圾收集器无法自动回收它们的；如果不存在泄漏，就应当检查虚拟机的堆参数（-Xmx与-Xms），与机器物理内存对比看是否还可以调大，从代码上检查是否存在某些对象生命周期过长，持有状态时间过长的情况，尝试减少程序运行期的内存消耗</p>
+<h3 id="虚拟机栈和本地方法栈溢出"><a href="#虚拟机栈和本地方法栈溢出" class="headerlink" title="虚拟机栈和本地方法栈溢出"></a>虚拟机栈和本地方法栈溢出</h3><p>由于在HotSpot虚拟机中并不区分虚拟机栈和本地方法栈，因此，对于HotSpot来说，虽然-Xoss参数存在，但实际上是无效的，栈容量只由-Xss参数设定，关于虚拟机栈和本地方法栈，在Java虚拟机规范中描述了两种异常：</p>
+<p>如果线程请求的栈深度大于虚拟机所允许的最大深度，将抛出StackOverflowError异常</p>
+<p>如果虚拟机在扩展栈时无法申请到足够的内存空间，则抛出OutOfMemoryError异常</p>
+<p>1.使用-Xss参数削减栈内存容量。结果：抛出SOF异常时的堆栈深度相应缩小。</p>
+<p>2.定义大量的本地变量，增大此方法对应帧的长度。结果：抛出SOF异常时的堆栈深度相应缩小。</p>
+<p>3.创建几个定义很多本地变量的复杂对象，打开逃逸分析和标量替换选项，使得JIT编译器允许对象拆分后在栈中分配。结果：实际效果同第二点</p>
+<p>代码：虚拟机栈和本地方法栈OOM测试</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"></div><div class="line"> * VM Args：-Xss128k</div><div class="line"></div><div class="line"> * @author bryan</div><div class="line"></div><div class="line"> */</div><div class="line"></div><div class="line">public class JavaVMStackSOF &#123;</div><div class="line"></div><div class="line">​    private int stackLength = 1;</div><div class="line"></div><div class="line">​    public void stackLeak()&#123;</div><div class="line"></div><div class="line">​        stackLength++;</div><div class="line"></div><div class="line">​        stackLeak();</div><div class="line"></div><div class="line">​    &#125;</div><div class="line"></div><div class="line">​    public static void main(String[] args) throws Throwable&#123;</div><div class="line"></div><div class="line">​        JavaVMStackSOF oom = new JavaVMStackSOF();</div><div class="line"></div><div class="line">​        try&#123;</div><div class="line"></div><div class="line">​            oom.stackLeak();</div><div class="line"></div><div class="line">​        &#125;catch (Throwable e)&#123;</div><div class="line"></div><div class="line">​            System.out.println(&quot;stack length:&quot;+oom.stackLength);</div><div class="line"></div><div class="line">​            throw e;</div><div class="line"></div><div class="line">​        &#125;</div><div class="line"></div><div class="line">​    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>运行结果：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">stack length:999</div><div class="line"></div><div class="line">Exception in thread &quot;main&quot; java.lang.StackOverflowError</div><div class="line"></div><div class="line">​	at JVMCode.chaoter2.JavaVMStackSOF.stackLeak(JavaVMStackSOF.java:10)</div><div class="line"></div><div class="line">​	at JVMCode.chaoter2.JavaVMStackSOF.stackLeak(JavaVMStackSOF.java:11)</div><div class="line"></div><div class="line">​	at JVMCode.chaoter2.JavaVMStackSOF.stackLeak(JavaVMStackSOF.java:11)</div><div class="line"></div><div class="line">​	at JVMCode.chaoter2.JavaVMStackSOF.stackLeak(JavaVMStackSOF.java:11)</div><div class="line"></div><div class="line">​        .................</div></pre></td></tr></table></figure></p>
+<p>但是这样产生的内存溢出异常与栈空间是否足够大并不存在任何联系，或者准确地说，在这种情况下，为每个线程的栈分配的内存越大，反而越容易产生内存溢出异常。原因不难理解，虚拟机提供了参数来控制Java堆和方法区的这两部分内存最大值，，剩余的内存为2GB（操作系统限制）减去Xmx（最大堆容量），再减去MaxPermSize(最大方法区容量)，程序计数器消耗内存很小，可以忽略不计，如果虚拟机进程本身耗费的内存不计算在内，剩下的内存就由虚拟机栈和本地方法栈“瓜分”了。每个线程分配到的栈容量越大，可以建立的线程数量自然就越少，建立线程时就越容易把剩下的内存耗尽。但是，如果是建立过多线程导致的内存溢出，在不能减少线程数或者更换64位虚拟机的情况下，就只能通过减少最大堆和减少栈容量来换取更多的线程。如果没有这方面的处理经验，这种通过“减少内存”的手段来解决内存溢出的方式会比较难以想到</p>
+<p>创建线程导致内存溢出异常代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"></div><div class="line"> \* VM Args:-Xss2M</div><div class="line"></div><div class="line"> */</div><div class="line"></div><div class="line">public class JavaVMStackOOM &#123;</div><div class="line"></div><div class="line">​    private void dontStop()&#123;</div><div class="line"></div><div class="line">​        while(true)&#123;</div><div class="line"></div><div class="line">​        &#125;</div><div class="line"></div><div class="line">​    &#125;</div><div class="line"></div><div class="line">​    public void stackLeakByThread()&#123;</div><div class="line"></div><div class="line">​        while(true)&#123;</div><div class="line"></div><div class="line">​            Thread thread = new Thread(new Runnable() &#123;</div><div class="line"></div><div class="line">​                @Override</div><div class="line"></div><div class="line">​                public void run() &#123;</div><div class="line"></div><div class="line">​                    dontStop();</div><div class="line"></div><div class="line">​                &#125;</div><div class="line"></div><div class="line">​            &#125;);</div><div class="line"></div><div class="line">​            thread.start();</div><div class="line"></div><div class="line">​        &#125;</div><div class="line"></div><div class="line">​    &#125;</div><div class="line"></div><div class="line">​    public static void main(String[] args)&#123;</div><div class="line"></div><div class="line">​        JavaVMStackOOM oom = new JavaVMStackOOM();</div><div class="line"></div><div class="line">​        oom.stackLeakByThread();</div><div class="line"></div><div class="line">​    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="方法区和运行时常量池溢出"><a href="#方法区和运行时常量池溢出" class="headerlink" title="方法区和运行时常量池溢出"></a>方法区和运行时常量池溢出</h3><p>运行时常量是方法区的一部分，所以对运行时常量的测试就是对方法区的测试。String.intern()是一个Native方法，它的作用是：如果字符串常量池已经包含一个等于此String对象的字符串，则返回代表池中这个字符串的String对象；否则，将此String对象包含的字符串添加到常量池中，并且返回此String对象的引用。我们只需要通过-XX:PermSize和-XX:MaxPermSize限制方法区大小即可限制常量池容量。实现代码如下：</p>
+<p>清单4：运行时常量池导致的OOM异常<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"></div><div class="line"> * VM Args：-XX:PermSize=10M -XX:MaxPermSize=10M</div><div class="line"></div><div class="line"> * @author bryan</div><div class="line"></div><div class="line"> */</div><div class="line"></div><div class="line">public class RuntimeConstantPoolOOM &#123;</div><div class="line"></div><div class="line"> </div><div class="line"></div><div class="line">​       public static void main(String[] args) &#123;</div><div class="line"></div><div class="line">​              // 使用List保持着常量池引用，压制Full GC回收常量池行为</div><div class="line"></div><div class="line">​              List&lt;String&gt; list = new ArrayList&lt;String&gt;();</div><div class="line"></div><div class="line">​              // 10M的PermSize在integer范围内足够产生OOM了</div><div class="line"></div><div class="line">​              int i = 0;</div><div class="line"></div><div class="line">​              while (true) &#123;</div><div class="line"></div><div class="line">​                     list.add(String.valueOf(i++).intern());</div><div class="line"></div><div class="line">​              &#125;</div><div class="line"></div><div class="line">​       &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3><p>上文讲过，方法区用于存放Class相关信息，所以这个区域的测试我们借助CGLib直接操作字节码动态生成大量的Class，值得注意的是，这里我们这个例子中模拟的场景其实经常会在实际应用中出现：当前很多主流框架，如Spring、Hibernate对类进行增强时，都会使用到CGLib这类字节码技术，当增强的类越多，就需要越大的方法区用于保证动态生成的Class可以加载入内存。</p>
+<p>清单5：借助CGLib使得方法区出现OOM异常<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"></div><div class="line"> * VM Args： -XX:PermSize=10M -XX:MaxPermSize=10M</div><div class="line"></div><div class="line"> * @author bryan</div><div class="line"></div><div class="line"> */</div><div class="line"></div><div class="line">public class JavaMethodAreaOOM &#123;</div><div class="line"></div><div class="line"> </div><div class="line"></div><div class="line">​       public static void main(String[] args) &#123;</div><div class="line"></div><div class="line">​              while (true) &#123;</div><div class="line"></div><div class="line">​                     Enhancer enhancer = new Enhancer();</div><div class="line"></div><div class="line">​                     enhancer.setSuperclass(OOMObject.class);</div><div class="line"></div><div class="line">​                     enhancer.setUseCache(false);</div><div class="line"></div><div class="line">​                     enhancer.setCallback(new MethodInterceptor() &#123;</div><div class="line"></div><div class="line">​                            public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable &#123;</div><div class="line"></div><div class="line">​                                   return proxy.invokeSuper(obj, args);</div><div class="line"></div><div class="line">​                            &#125;</div><div class="line"></div><div class="line">​                     &#125;);</div><div class="line"></div><div class="line">​                     enhancer.create();</div><div class="line"></div><div class="line">​              &#125;</div><div class="line"></div><div class="line">​       &#125;</div><div class="line"></div><div class="line"> </div><div class="line"></div><div class="line">​       static class OOMObject &#123;</div><div class="line"></div><div class="line"> </div><div class="line"></div><div class="line">​       &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>运行结果：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">Caused by: java.lang.OutOfMemoryError: PermGen space</div><div class="line"></div><div class="line">​       at java.lang.ClassLoader.defineClass1(Native Method)</div><div class="line"></div><div class="line">​       at java.lang.ClassLoader.defineClassCond(ClassLoader.java:632)</div><div class="line"></div><div class="line">​       at java.lang.ClassLoader.defineClass(ClassLoader.java:616)</div><div class="line"></div><div class="line">​       ... 8 more</div></pre></td></tr></table></figure></p>
+<h3 id="本机直接内存溢出"><a href="#本机直接内存溢出" class="headerlink" title="本机直接内存溢出"></a>本机直接内存溢出</h3><p>DirectMemory容量可通过-XX:MaxDirectMemorySize指定，不指定的话默认与Java堆（-Xmx指定）一样，下文代码越过了DirectByteBuffer，直接通过反射获取Unsafe实例进行内存分配（Unsafe类的getUnsafe()方法限制了只有引导类加载器才会返回实例，也就是基本上只有rt.jar里面的类的才能使用），因为DirectByteBuffer也会抛OOM异常，但抛出异常时实际上并没有真正向操作系统申请分配内存，而是通过计算得知无法分配既会抛出，真正申请分配的方法是unsafe.allocateMemory()。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"></div><div class="line"> \* VM Args:-Xmx20M -XX:MaxDirectMemorySize=10M</div><div class="line"></div><div class="line"> */</div><div class="line"></div><div class="line">public class DirectMemoryOOM &#123;</div><div class="line"></div><div class="line">​    private static final int _1MB = 1024*1024;</div><div class="line"></div><div class="line">​    public static void main(String[] args) throws Exception&#123;</div><div class="line"></div><div class="line">​        Field unsafeField = Unsafe.class.getDeclaredFields()[0];</div><div class="line"></div><div class="line">​        unsafeField.setAccessible(true);</div><div class="line"></div><div class="line">​        Unsafe unsafe = (Unsafe)unsafeField.get(null);</div><div class="line"></div><div class="line">​        while(true)&#123;</div><div class="line"></div><div class="line">​            unsafe.allocateMemory(_1MB);</div><div class="line"></div><div class="line">​        &#125;</div><div class="line"></div><div class="line">​    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>运行结果<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Exception in thread &quot;main&quot; java.lang.OutOfMemoryError</div><div class="line"></div><div class="line">​	at sun.misc.Unsafe.allocateMemory(Native Method)</div><div class="line"></div><div class="line">​	at JVMCode.chapter2.DirectMemoryOOM.main(DirectMemoryOOM.java:17)</div></pre></td></tr></table></figure></p>
+<p>由于DirectMemory导致的内存溢出，一个明显的特征是在Heap Dump文件中不会看见明显的异常，如果读者发现OOM之后Dump文件很小，而程序中又直接或间接使用了NIO，那就可以考虑检查一下是不是这方面的原因</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+	
+	<div>
+    
+    </div>
+
+	<div>
+      
+    </div>
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://bryancrash.site/2018/04/05/HotSpot虚拟机对象/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="bryan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/image/bryan.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="林距离">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/04/05/HotSpot虚拟机对象/" itemprop="url">HotSpot虚拟机对象</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-05T12:18:37+08:00">
+                2018-04-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java虚拟机/" itemprop="url" rel="index">
+                    <span itemprop="name">-Java虚拟机</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-comment-o"></i>
+              </span>
+              
+                <a href="/2018/04/05/HotSpot虚拟机对象/#SOHUCS" itemprop="discussionUrl">
+                  <span id="url::http://bryancrash.site/2018/04/05/HotSpot虚拟机对象/" class="cy_cmt_count" data-xid="2018/04/05/HotSpot虚拟机对象/" itemprop="commentsCount" ></span>
+                </a>
+              
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1,770
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  6
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>再了解了Java虚拟机运行时数据之后，就应该了解一下虚拟机内存中数据的其他细节，在程序的运行过程中，对象的分配，布局和访问最频繁，所以对此过程进行一个详解。</p>
+<h3 id="对象的创建"><a href="#对象的创建" class="headerlink" title="对象的创建"></a>对象的创建</h3><p>虚拟机遇到一条new指令时，首先去检查这个指令的参数是否在常量池中定位到一个类的符号引用，并且检查这个符号引用代表的类是否已被加载、解析和初始化。如果没有，那必须先执行相应的类加载过程。<br>在类加载查通过后，接下来虚拟机将为新生对象分配内存。对象所需内存的大小在类加载完成后便可完全确定，为对象分配空间的任务具体便等同于一块确定大小的内存从Java堆中划分出来，怎么划呢？<br>分配内存的两种方式（选择哪种分配方式由Java堆是否规整决定，而Java堆是否规整又由所采用的垃圾收集器是否带有压缩整理功能决定）<br>​       </p>
+<h4 id="指针碰撞"><a href="#指针碰撞" class="headerlink" title="指针碰撞"></a>指针碰撞</h4><p>假设Java堆中内存是绝对规整的，所有用过的内存都被放在一边，空闲的内存被放在另一边，中间放着一个指针作为分界点的指示器，那所分配内存就仅仅是把那个指针向空闲空间那边挪动一段与对象大小相等的距离。这种分配方式称为“指针碰撞”</p>
+<h4 id="空闲列表"><a href="#空闲列表" class="headerlink" title="空闲列表"></a>空闲列表</h4><p>如果java堆中的内存并不是规整的，已使用的内存和空闲的内存相互交错，那就没有办法简单地进行指针碰撞了，虚拟机就必须维护一个列表，记录哪些内存块是可用的，在分配的时候从列表中找到一块足够大的空间划分给对象实例，并更新列表上的记录，这种分配方式称为“空闲列表”</p>
+<p>除如何划分可用空间之外，还有另外一个需要考虑的问题是对象创建再虚拟机中是非常频繁的行为，即使是仅仅修改一个指针所指向的位置，在并发情况下也并不是线程安全的，可能出现正在给对象A分配内存，指针还没来得及修改，对象B又同时使用了原来的指针来分配内存的情况，解决这个问题有两种方案：<br>1.对分配内存空间的动作进行同步处理——实际上采用CAS配上失败重试的方式保证更新操作的原子性<br>2.把内存分配的动作按照线程划分在不同的空间之中进行，即每个线程在Java堆中预先分配一小块内存，称为本地线程分配缓冲。哪个线程要分配内存，就在哪个线程的TLAB上分配，只有TLAB用完并分配新的TLAB时，才需要同步锁定。虚拟机是否使用TLAB，可以通过-XX:+/-UseTLAB参数来设定</p>
+<p>内存分配完成之后，虚拟机需要将分配到的内存空间都初始化为零值（不包括对象头），如果使用TLAB的话，这一个工作也可以提前至TLAB分配时进行。这步操作保证了对象的实例字段在Java代码中可以不赋初始值就直接使用，程序能访问到这些字段的数据类型所对应的零值。<br>接下来，虚拟机要对对象进行必要的设置，例如这个对象是哪个类的实例、如何才能找到类的元数据信息、对象的哈希码、对象的GC分代年龄等信息。这些信息存放在对象的对象头（Object Header）之中。根据虚拟机当前的运行状态的不同，如是否启用偏向锁等，对象头会有不同的设置方式。</p>
+<h4 id="Java的内存分配"><a href="#Java的内存分配" class="headerlink" title="Java的内存分配"></a>Java的内存分配</h4><p>在HotSpot虚拟机中，对象在内存中存储的布局可以分为3块区域：对象头、实例数据和对齐填充</p>
+<p>HotSpot虚拟机的对象头包括两部分信息：<br>Mark Word<br>用于存储对象自身的运行时数据，如哈希码、GC分代年龄、锁状态标志、线程持有的锁、偏向线程ID、偏向时间戳等，这部分数据的长度在32位和64位的虚拟机中分别为32bit和64bit<br>类型指针<br>对象指向他的类元数据的指针，虚拟机通过这个指针来确定这个对象是哪个类的实例。并不是所有的虚拟机实现都必须在对象数据上保留类型指针，换句话说，查找对象的元数据信息并不一定要经过对象本身<br>​<br>接下来的实例数据部分是对象真正存储的有效信息，也是在程序代码中所定义的各种类型的字段内容。无论是从父类继承下来的，还是在子类中定义的，都需要记录起来。这部分的存储顺序会受到虚拟机分配策略参数（FieldsAllocationStyle）和字段在Java源码中定义顺序的影响。<br>​<br>对齐填充并不是必然存在的，也没有特别的含义，它仅仅起着占位符的作用。<br>​    </p>
+<h4 id="对象的访问定位"><a href="#对象的访问定位" class="headerlink" title="对象的访问定位"></a>对象的访问定位</h4><p>建立对象是为了使用对象，我们的Java程序需要通过栈上的reference数据来操作堆上的具体对象。<br>目前主流的访问方式有使用句柄和直接指针两种：<br>​<br>如果使用句柄访问的话，那么Java堆中将会划分出一块内存来作为句柄池，reference中<br>存储的就是对象的句柄地址，而句柄中包含了对象实例数据与类型数据各自的具体地址信<br>息。<br><img src="http://p0c736231.bkt.clouddn.com/%E9%80%9A%E8%BF%87%E5%8F%A5%E6%9F%84%E8%AE%BF%E9%97%AE%E5%AF%B9%E8%B1%A1.png" alt=""></p>
+<p>如果使用直接指针访问，那么Java堆对象的布局中就必须考虑如何放置访问类型数据的 相关信息，而reference中存储的直接就是对象地址<br><img src="http://p0c736231.bkt.clouddn.com/%E9%80%9A%E8%BF%87%E6%8C%87%E9%92%88%E8%AE%BF%E9%97%AE%E5%AF%B9%E8%B1%A1.png" alt=""></p>
+<p>两种访问方式的对比，这两种对象访问方式各有优势：<br>使用句柄来访问的最大好处就是reference中存储的是稳定的句柄地址，在对象被移动（垃圾收集时移动对象是非常普遍的行为）时只会改变句柄中的实例数据指针，而reference本身不需要修改。<br>使用直接指针访问方式的最大好处就是速度更快，它节省了一次指针定位的时间开销，由于对象的访问在Java中非常频繁，因此这类开销积少成多后也是一项非常可观的执行成本。Sun HotSpot虚拟机是使用第二种方式进行对象虚拟机访问的。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+	
+	<div>
+    
+    </div>
+
+	<div>
+      
+    </div>
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://bryancrash.site/2018/01/08/用思维导图学习Java/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -937,421 +2818,13 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://bryancrash.site/2017/12/02/Java内存模型/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="bryan">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/image/bryan.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="林距离">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/12/02/Java内存模型/" itemprop="url">Java内存模型</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-02T22:24:54+08:00">
-                2017-12-02
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java虚拟机/" itemprop="url" rel="index">
-                    <span itemprop="name">-Java虚拟机</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-              <span class="post-meta-divider">|</span>
-              <span class="post-meta-item-icon">
-                <i class="fa fa-comment-o"></i>
-              </span>
-              
-                <a href="/2017/12/02/Java内存模型/#SOHUCS" itemprop="discussionUrl">
-                  <span id="url::http://bryancrash.site/2017/12/02/Java内存模型/" class="cy_cmt_count" data-xid="2017/12/02/Java内存模型/" itemprop="commentsCount" ></span>
-                </a>
-              
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  1,952
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  7
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p> Java虚拟机在执行Java程序的时候会把管理的内存划分为若干个不同的数据区域，这些区域都有各自的用途，以及创建和销毁的时间，有的是线程共享的，有的是线程共享的，有的是线程隔离的；Java虚拟机所管理的内存区域具体包含以下几个运行时数据区域：<br><img src="http://p0c736231.bkt.clouddn.com/%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B.png" alt=""></p>
-<h3 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h3><p>程序计数器是线程私有的，它可以看做是当前线程所执行的字节码的行号指示器，字节码解释器工作时就是通过改变这个计数器的值来选择下一条需要执行的字节码指令，分支，循环，跳转，异常处理，线程恢复等基础功能都需要依赖这个计数器来完成<br>如果线程正在执行的是一个Java方法，这个计数器记录的是正在执行的虚拟机字节码指令的地址；如果正在执行的是一个Native方法，这个计数器值则为空，此内存区域是唯一一个Java虚拟机规范中没有规定任何OutOfMemoryError情况的区域</p>
-<h3 id="Java虚拟机栈"><a href="#Java虚拟机栈" class="headerlink" title="Java虚拟机栈"></a>Java虚拟机栈</h3><p>与程序计数器一样，Java虚拟机栈也是线程私有的，它的生命周期与线程相同，虚拟机栈描述的是Java方法执行的内存模型，其中包括：每个方法在执行的同时都会创建一个栈帧用于存储变量表，操作数栈，动态链接，方法出口等信息。每一个方法从调用执行完成的过程，就对应着一个栈帧在虚拟机栈中入栈到出栈的过程。</p>
-<p>经常有人将Java内存区分为堆内存和栈内存，Java内存区域的划分实际上比这复杂。这样划分只是说明与变量定义密切相关的内存区域是这两块。其中所指的“堆”后面会专门描述，而所指的“栈”就是VM栈中各个帧的本地变量表部分。局部变量表存放了编译期可知的各种基本数据类型（boolean,byte,char,short,int,float,long,double）,对象引用（reference类型）和returnAddress类型。其中64位长度的long和double类型的数据会占用2个局部变量空间（slot），其余的数据类型只占用1个。局部变量表所需的内存空间在编译期间完成分配</p>
-<p>在Java虚拟机规范中，对这个区域规定了两种异常状况：如果线程请求的栈深度大于虚拟机所允许的深度，将抛出StackOverflowError异常；如果扩展时无法申请到足够的内存，就会抛出OutOfMemoryError异常</p>
-<h3 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h3><p>本地方法栈与虚拟机栈所发挥的作用是非常相似的，它们之间的区别不过是虚拟机栈为虚拟机执行Java方法服务，而本地方法栈则为虚拟机使用到的Native方法服务，它所使用的语言，使用方式和数据结构并没有强制规定，因此具体的虚拟机可以自由实现它。甚至有的虚拟机直接就把本地方法栈和虚拟机栈合二为一和VM栈一样，这个区域也会抛出StackOverflowError和OutOfMemoryError异常。</p>
-<h3 id="Java堆"><a href="#Java堆" class="headerlink" title="Java堆"></a>Java堆</h3><p>对于大多数应用来说，Java堆是Java虚拟机所管理的内存中最大的一块，内存区域，在虚拟机启动时创建。此区域的唯一目的就是存放对象实例，几乎所有的对象实例都在这里分配内存，。这一点在Java虚拟机规范中的描述是：所有的对象实例以及数组都要在堆上分配，但是随着JIT编译器的发展与逃逸分析技术逐渐成熟，栈上分配，标量替换优化技术将会导致一些微妙的变化发生，所有的对象都分配在堆上也渐渐变得不是那么绝对了。</p>
-<p>Java堆还可以细分为：新生代和老年代；再细致一点的：eden、from survivor、to survivor，从内存分配的角度来看，线程共享的Java堆中可能划分出多个线程私有的分配缓冲区（TLAB）。根据VM Spec的要求，Java堆可以处于物理上不连续的内存空间，它逻辑上是连续的即可，就像我们的磁盘空间一样。实现时可以选择实现成固定大小的，也可以是可扩展的，不过当前所有商业的虚拟机都是按照可扩展来实现的（通过-Xmx和-Xms控制）。如果在堆中无法分配内存，并且堆也无法再扩展时，将会抛出OutOfMemoryError异常。</p>
-<h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3><p>方法区和Java堆一样，是各个线程共享的内存区域，它用于存储已被虚拟机加载的类信息、常量、静态变量、即时编译器编译后的代码等数据。虽然Java虚拟机规范把方法区描述为堆的一个逻辑部分，但是它有一个别名叫做Non-Heap（非堆），除了和Java堆一样不需要连续的内存，也可以选择固定大小或者可扩展外，甚至可以选择不实现垃圾收集。相对来说，垃圾收集行为在这个区域是相对比较少发生的，但并不是某些描述那样永久代不会发生GC（至少对当前主流的商业JVM实现来说是如此），这里的GC主要是对常量池的回收和对类的卸载，虽然回收的“成绩”一般也比较差强人意，尤其是类卸载，条件相当苛刻。</p>
-<h3 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h3><p>运行时常量池是方法区的一部分。class文件中除了有类的版本、字段、方法、接口等描述信息外，还有一项信息是常量池，用于存放编译器生成的各种字面量和符号引用，这部分内容将在加载后进入方法区的运行时常量池中存放。运行时常量池相对于Class文件常量池的另外一个重要特征是具备动态性，Java语言并不要求常量一定只有编译期才能产生，也就是并非预置入Class文件中常量池的内容才能进入方法区运行时常量池，运行期间也可能将新的常量放入池中，这种特性被开发利用得比较多的是String类的intern（）方法。</p>
-<p>运行时常量池是方法区的一部分，自然受到方法区内存的限制，当常量池无法在申请到内存时会抛出OutOfMemoryError异常。</p>
-<h3 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h3><p>直接内存并不是虚拟机运行时数据区的一部分，它根本就是本机内存而不是VM直接管理的区域。但是这部分内存也会导致OutOfMemoryError异常出现，因此我们放到这里一起描述。</p>
-<p>显然本机直接内存的分配不会受到Java堆大小的限制，但是即然是内存那肯定还是要受到本机物理内存（包括SWAP区或者Windows虚拟内存）的限制的，一般服务器管理员配置JVM参数时，会根据实际内存设置-Xmx等参数信息，但经常忽略掉直接内存，使得各个内存区域总和大于物理内存限制（包括物理的和操作系统级的限制），而导致动态扩展时出现OutOfMemoryError异常。</p>
-<p>下图为整理出来的思维导图<br><img src="http://p0c736231.bkt.clouddn.com/Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B.png" alt=""></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-	
-	<div>
-    
-    </div>
-
-	<div>
-      
-    </div>
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://bryancrash.site/2017/11/27/我的历程/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="bryan">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/image/bryan.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="林距离">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/11/27/我的历程/" itemprop="url">我的历程</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-27T22:11:21+08:00">
-                2017-11-27
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/经验之谈/" itemprop="url" rel="index">
-                    <span itemprop="name">经验之谈</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-              <span class="post-meta-divider">|</span>
-              <span class="post-meta-item-icon">
-                <i class="fa fa-comment-o"></i>
-              </span>
-              
-                <a href="/2017/11/27/我的历程/#SOHUCS" itemprop="discussionUrl">
-                  <span id="url::http://bryancrash.site/2017/11/27/我的历程/" class="cy_cmt_count" data-xid="2017/11/27/我的历程/" itemprop="commentsCount" ></span>
-                </a>
-              
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  2,846
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  10
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><hr>
-<p>我最终走上技术岗是跟我的兴趣和性格完全相关的，记得高中的时候最喜欢的两门课是数学和物理，在同学们的眼里我就学两门课，那就是数学和物理，我所在的高中有一个优良的传统，那就是每天晚上七点看新闻联播，这也是我们接触外界信息最主要的渠道了，有时候看着新闻联播看到一些科技创新，一些发明就很振奋，心里暗示自己以后也应该成为这样的人，所以高考的时候根据自己的成绩第一志愿报了西电，第一专业计算机专业。但是最后竟然滑档到了经管院，哈哈，真是阴差阳错，不过进入大学也没后悔，在经管院学习到的一些经济学知识，后面工作都能用到，也能去解释一些经济现象，所以我也建议大家有时间也去学习一些经济与管理的知识。但是我大部分时间还是用在了自己喜欢的东西，利用课余时间自己去学习计算机的相关知识，但是兴趣和天赋往往不能同时拥有，我在学习的过程中并没有发现自己有多高的天赋，但是量变会达到质变，好多东西一遍不懂，看两遍，多问，多总结，掌握技巧，这样即使没有天赋我们也能够掌握这些知识。在我接触到的一些人里面，虽然他们从二本院校毕业，但是他们的能力比好多一本院校的学生能力还要强，他们能拿到一线互联网公司的offer，并且在网上与别人做技术分享。按道理我们学历比他们高，能力也应该比他们高才对，但是往往相反，所以我们不能荒废在大学的时间！</p>
-<h3 id="我在学习技术的过程中，其实是走了好多弯路的，大概分这几个阶段："><a href="#我在学习技术的过程中，其实是走了好多弯路的，大概分这几个阶段：" class="headerlink" title="我在学习技术的过程中，其实是走了好多弯路的，大概分这几个阶段："></a>我在学习技术的过程中，其实是走了好多弯路的，大概分这几个阶段：</h3><hr>
-<p>大一的时候军训结束，社团开始招新，当时看到校科协有个计算机部，心里想着计算机应该能学到一些技术，所以就报了名，最后进去了，当时就报了这一个组织，其它也没报，进去之后有时候会有一些技术培训，但是自己对计算机没有一点基础，也不知道该掌握哪些知识才可以，培训的内容根本不懂，哈哈，感觉一点都没天赋啊。当时还自己去学习C#，好像学到一半就放弃了。当时对一些计算机软件玩得还挺熟，什么视频制作，PS之类的当时差不多都会，大一基本就这样过了，只是积累了一点点计算机的基础！</p>
-<p>大二第一学期，大家都开始报国创了，然后我们班一个同学找到我，让我一起跟着做国创，大概是看到我平时在学习技术，可以做团队的技术开发。当时我们做的是一个物物交换的平台。我当时也没这方面经验，但是国创周期长，可以边学边做，还有导师做指导，学校还提供资源，所以我强烈建议大家有机会就去参加国创，这个过程可以学到很多东西。我在这个这个过程中自学了前端的技术，后端语言当时学习PHP，但是我现在不用PHP写代码。这个过程主要学习到软件工程的一些思想，还有语言的一些感悟，也很庆幸当时学习了前端，现在基本能够独立完成项目的前后端开发，前端不是很复杂的效果都能做，其中js是瓶颈，虽然系统地学习过，但是毕竟不是做前端的，用的少，所以对它的实际应用掌握很差，但是现在前端框架挺多，而且学习成本低，学习一些框架的使用就能做出很多炫酷的页面。做国创的过程算是我真正学习编程的开始吧，所以起步比较晚，虽然最后结果一般般，但是过程还是很重要的。</p>
-<p>大二下学期计算机设计大赛，这时候我们院的一个朋友让我跟他们一起做，这个同学编程天赋极高，ACM拿过很多奖，之前我也请他给大家做过ACM分享。我们做的东西是一个APP，其实后台功能但是实现得很少，只是做了前台的界面，但是产品还算比较创新，校赛拿了奖，最后在西北赛区也获了奖。这个时候我才真正开始学习Java，也就是我学习Java是从这个时候开始的。</p>
-<p>大三的时候我开始补计算机的其他基础，计算机网络，操作系统，数据库等，但是从后面找工作的经历来看，我的这些基础还差很多，根本没有打牢。这个时候我也意识到算法的重要性，当时看了一本数据结构与算法C语言版，基本看完了，但是看完并不代表完全掌握，更多地还是要用代码实现。所以我在学习的过程存在的最大的问题就是看得多，代码事件很少，我希望大家不要犯同样的毛病，再简单的东西都要用代码去实现。这个过程有一段时间都是高峰，丁志伟我们三个人一起学习，每天早上其中一个人都会在图书馆占好座，然后一起探讨学习，这样互相进步的感觉真是好，两位大佬都很厉害，一个去了腾讯，一个今年签约头条。大三下学期基本就是在找实习了，最后拿到了金蝶的实习offer，实习的工作一般都是比较简单，公司一般也不会让你做一些核心的东西，但是我们可以从这个过程中学习到很多东西，自己去了解公司在用什么技术，怎么用的，这些在学校都是很难学到的东西，这样我们也知道自己该去学习什么了，技术的学习当然要积极主主动一些。</p>
-<hr>
-<p>说实话我的历程很普通，中间走过好多弯路，好多东西到现在看来如果当初有计划，系统有针对性地去学习，应该更好点。如果让我从头再来，我觉得并没有但是想的那么难。当时看的有些书我现在又在看第二遍，看第二遍的时候感悟比第一遍深很多，理解更加透彻了，而且越往后越想去了解更加底层的东西，因为这样可以就可以解释程序运行中的十万个为什么。工作这几个月，工作之余我还是保持学习状态，每天尽量抽时间刷leetCode题目，参与开源项目，补基础，有短期计划也有长期计划！</p>
-<p>我一直很庆幸能生长于现在这样一个时代，每天我们都能看到很多创新的东西，更对现在的科技发展感到振奋，这也激励着我不断努力跟上这个时代的发展。在深圳参加过百度和阿里技术相关的活动，让我对现在科技进步和人类的聪明才智惊叹不已。我觉得现在每个人都应该懂一点编程，因为在智能时代，我们与机器打交道的时间更多，如果不懂编程，可能好多东西我们都看不懂。</p>
-<h3 id="以下是对大家的一些建议"><a href="#以下是对大家的一些建议" class="headerlink" title="以下是对大家的一些建议"></a>以下是对大家的一些建议</h3><p>如果你感觉自己一个人学习很迷茫，无从下手，那就以小组形式来学习，每天小组做个todolist，然后定期做交流，遇到困难一起想办法解决，相信我，这样效率会很高！</p>
-<p>一定要重视基础，现在的技术更新非常快，但唯一不变的是这些基础知识，TCP/IP用了这么多年没有发生大的变化吧，算法知识也变化不大吧，只是针对一些领悟内的算法再不断地更新，所以技术的内在都是一样的，只是外壳包装不一样，所以把基础知识打扎实才能走的更快更远！</p>
-<p>如果你学会了一门语言，那就去多实践他，做一个项目，这个项目最好能够最大程度的包含你所学到的东西，同样的项目不同人做出来效果都是不一样的，这就体现出不同人的编码水平！项目不在多，在于精，有了项目基本就有了找实习，找工作的敲门砖，换句话说更有优势一些！</p>
-<p>算法和数据结构很重要，虽然在平时的开发中用的不多，但是这能够体现一个程序员的编码能力和逻辑思维能力，所以好多大厂都会考算法，这样他们才能做人才的筛选，比如微软技术面大概有四五面，基本一路都是算法面，所以大家要足够重视。</p>
-<p>好多同学说学习了语言但是还是不知道怎么写程序，程序怎样才能写得优美，那这个时候就需要去看一些源码，JDK源码最合适不过了，他们的代码设计十分完美，已经进行过好多次优化，这也是一群优秀工程师智慧的结晶，仔细研读他们的代码，你会学到很多。再到后面你接触到一些框架的时候，在会用框架的前提下，有时间读一下源码，这个过程收获是很大的！</p>
-<p>如果有机会一定要去实习，因为你如果能去一个好的公司实习，转正的机会就很大，而且实习要求是比正式校招要求低的，所以这是你进入好公司的一个捷径。就算不能转正，积累经验，提高自己，去其他好公司都没问题。</p>
-<hr>
-<p>好多事情并不是想象得那么困难，只是你没有做到该做的。过程做好了，结果当然是自然而然的，同时欢迎有对技术感兴趣的和我进行交流，咱们可以互相学习！除了这些，大家也可以利用大学的时间多读一些书，其好处是长久的，我就不多阐述了。<br>最后祝大家学业有成，在学校照顾好自己，毕业以后很怀念在学校的日子，银山安拉，有时间一定会去学校看大家。同时也希望有更多的人来深圳，现在我们在深圳的圈子在慢慢扩大，人多了就很热闹，深圳也非常欢迎年轻人。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-	
-	<div>
-    
-    </div>
-
-	<div>
-      
-    </div>
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+  </nav>
+
 
 
           </div>
@@ -1400,7 +2873,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-count">12</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1532,7 +3005,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">7.7k</span>
+    <span title="Site words total count">30.8k</span>
   
 </div>
 
@@ -1558,7 +3031,7 @@
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共7.7k字</span>
+  <span class="post-count">博客全站共30.8k字</span>
 </div>
         
 

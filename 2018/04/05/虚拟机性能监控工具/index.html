@@ -82,7 +82,7 @@
 
 
 
-  <meta name="keywords" content="-计算机基础," />
+  <meta name="keywords" content="-Java虚拟机," />
 
 
 
@@ -95,20 +95,18 @@
 
 
 
-<meta name="description" content="前言上次在给大家分享的过程中给大家提到过关于技术基础的重要性，不知道大家对这个基础知识的重视程度有多高，大家的体会可能并不深，基础知识的掌握程度其实为了长久的发展，你的技术深度以及后面解决问题的能力，如果让我再重新走一遍大学，我会用大量的时间去学习这些基础的知识，这样我在后面的工作中省下好多的时间去做别的事，学习大家要学会投资时间。最近在极客时间陈皓的专栏中谈到了如何拥有技术领导力，全篇第一部分就">
-<meta name="keywords" content="-计算机基础">
+<meta name="description" content="前言   给一个系统定位问题的时候，知识，经验是关键基础，数据是依据，工具是运用知识处理数据的手段，这里说的数据包括：运行日志、异常堆栈、GC日志、线程快照、堆转储快照等。在jdk的bin目录下面有一些命令行工具，这些工具都是jdk/lib/tools.jar类库的一层薄包装，它们主要的功能代码是在tools类库中实现的。JDK开发团队选择采用Java代码实现这些监控工具是有特别用意的：当应用程序">
+<meta name="keywords" content="-Java虚拟机">
 <meta property="og:type" content="article">
-<meta property="og:title" content="论技术基础的重要性">
-<meta property="og:url" content="http://bryancrash.site/2017/12/02/论技术基础的重要性/index.html">
+<meta property="og:title" content="虚拟机性能监控工具">
+<meta property="og:url" content="http://bryancrash.site/2018/04/05/虚拟机性能监控工具/index.html">
 <meta property="og:site_name" content="林距离">
-<meta property="og:description" content="前言上次在给大家分享的过程中给大家提到过关于技术基础的重要性，不知道大家对这个基础知识的重视程度有多高，大家的体会可能并不深，基础知识的掌握程度其实为了长久的发展，你的技术深度以及后面解决问题的能力，如果让我再重新走一遍大学，我会用大量的时间去学习这些基础的知识，这样我在后面的工作中省下好多的时间去做别的事，学习大家要学会投资时间。最近在极客时间陈皓的专栏中谈到了如何拥有技术领导力，全篇第一部分就">
+<meta property="og:description" content="前言   给一个系统定位问题的时候，知识，经验是关键基础，数据是依据，工具是运用知识处理数据的手段，这里说的数据包括：运行日志、异常堆栈、GC日志、线程快照、堆转储快照等。在jdk的bin目录下面有一些命令行工具，这些工具都是jdk/lib/tools.jar类库的一层薄包装，它们主要的功能代码是在tools类库中实现的。JDK开发团队选择采用Java代码实现这些监控工具是有特别用意的：当应用程序">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://p0c736231.bkt.clouddn.com/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86.png">
-<meta property="og:updated_time" content="2017-12-02T15:52:12.007Z">
+<meta property="og:updated_time" content="2018-04-05T05:56:37.899Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="论技术基础的重要性">
-<meta name="twitter:description" content="前言上次在给大家分享的过程中给大家提到过关于技术基础的重要性，不知道大家对这个基础知识的重视程度有多高，大家的体会可能并不深，基础知识的掌握程度其实为了长久的发展，你的技术深度以及后面解决问题的能力，如果让我再重新走一遍大学，我会用大量的时间去学习这些基础的知识，这样我在后面的工作中省下好多的时间去做别的事，学习大家要学会投资时间。最近在极客时间陈皓的专栏中谈到了如何拥有技术领导力，全篇第一部分就">
-<meta name="twitter:image" content="http://p0c736231.bkt.clouddn.com/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86.png">
+<meta name="twitter:title" content="虚拟机性能监控工具">
+<meta name="twitter:description" content="前言   给一个系统定位问题的时候，知识，经验是关键基础，数据是依据，工具是运用知识处理数据的手段，这里说的数据包括：运行日志、异常堆栈、GC日志、线程快照、堆转储快照等。在jdk的bin目录下面有一些命令行工具，这些工具都是jdk/lib/tools.jar类库的一层薄包装，它们主要的功能代码是在tools类库中实现的。JDK开发团队选择采用Java代码实现这些监控工具是有特别用意的：当应用程序">
 
 
 
@@ -138,13 +136,13 @@
 
 
 
-  <link rel="canonical" href="http://bryancrash.site/2017/12/02/论技术基础的重要性/"/>
+  <link rel="canonical" href="http://bryancrash.site/2018/04/05/虚拟机性能监控工具/"/>
 
 
 
 
 
-  <title>论技术基础的重要性 | 林距离</title>
+  <title>虚拟机性能监控工具 | 林距离</title>
   
 
 
@@ -326,7 +324,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://bryancrash.site/2017/12/02/论技术基础的重要性/">
+    <link itemprop="mainEntityOfPage" href="http://bryancrash.site/2018/04/05/虚拟机性能监控工具/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="bryan">
@@ -343,7 +341,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">论技术基础的重要性</h1>
+          <h1 class="post-title" itemprop="name headline">虚拟机性能监控工具</h1>
         
 
         <div class="post-meta">
@@ -355,8 +353,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-02T23:33:16+08:00">
-                2017-12-02
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-05T12:21:15+08:00">
+                2018-04-05
               </time>
             
 
@@ -378,8 +376,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/技术杂谈/" itemprop="url" rel="index">
-                    <span itemprop="name">-技术杂谈</span>
+                  <a href="/categories/Java虚拟机/" itemprop="url" rel="index">
+                    <span itemprop="name">-Java虚拟机</span>
                   </a>
                 </span>
 
@@ -397,8 +395,8 @@
                 <i class="fa fa-comment-o"></i>
               </span>
               
-                <a href="/2017/12/02/论技术基础的重要性/#SOHUCS" itemprop="discussionUrl">
-                  <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2017/12/02/论技术基础的重要性/" itemprop="commentsCount"></span>
+                <a href="/2018/04/05/虚拟机性能监控工具/#SOHUCS" itemprop="discussionUrl">
+                  <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2018/04/05/虚拟机性能监控工具/" itemprop="commentsCount"></span>
                 </a>
               
             
@@ -420,7 +418,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2,695
+                  2,279
                 </span>
               
 
@@ -436,7 +434,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  9
+                  8
                 </span>
               
             </div>
@@ -457,54 +455,14 @@
       
 
       
-        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>上次在给大家分享的过程中给大家提到过关于技术基础的重要性，不知道大家对这个基础知识的重视程度有多高，大家的体会可能并不深，基础知识的掌握程度其实为了长久的发展，你的技术深度以及后面解决问题的能力，如果让我再重新走一遍大学，我会用大量的时间去学习这些基础的知识，这样我在后面的工作中省下好多的时间去做别的事，学习大家要学会投资时间。最近在极客时间陈皓的专栏中谈到了如何拥有技术领导力，全篇第一部分就用了大量的篇幅谈到了基础知识的重要性，下面我就把他对基础知识的解读分享给大家，大家完全可以按照这个计划去学习</p>
-<blockquote>
-<p>1.万丈高楼平地起。一栋楼能盖多高，一座大桥能造多长，重要的是它们的地基。同样对于技术人员来说，基础知识越扎实，走得就会越远。<br>2.计算机技术太多了，但是仔细分析你会发现，只是表现形式很多，而基础技术并不多。学好基础技术，能让你一通百通，更快地使用各种技术形式，从而可以更容易地跟上时代。<br>3.很多分布式系统架构，以及高可用、高性能、高并发的解决方案基本都可以在基础技术上找到它们的身影。所以，对基础技术的学习能让你更好地掌握更高维度的技术。<br>那么，哪些才是基础技术呢？我在下面罗列了一些。老实说，这些技术你学起来可能会感到非常枯燥无味，但是，我还是鼓励你能够克服人性的弱点，努力啃完。</p>
-</blockquote>
-<h3 id="具体来说，就是分成两个部分：系统和编程。"><a href="#具体来说，就是分成两个部分：系统和编程。" class="headerlink" title="具体来说，就是分成两个部分：系统和编程。"></a>具体来说，就是分成两个部分：系统和编程。</h3><h4 id="编程部分"><a href="#编程部分" class="headerlink" title="编程部分"></a>编程部分</h4><ul>
-<li><p>C 语言：相对于很多其他高级语言来说，C 语言更接近底层。在具备跨平台能力的前提下，它可以比较容易地被人工翻译成相应的汇编代码。它的内存管理很直接，让程序员直接和内存地址打交道。</p>
-<p>学习好 C 语言的好处是能掌握程序的运行情况，并能进行应用程序和操作系统编程（操作系统一般是汇编 +C 语言）。要学好 C 语言，可以阅读 C 语言的经典书籍《C 程序设计语言》第二版（K&amp;R），并多写程序，再读一些优秀开源项目的源代码。</p>
-</li>
-</ul>
-<p>除了让你更为了解操作系统之外，学习 C 语言还能让你更清楚地知道程序是怎么精细控制底层资源的，比如内存管理、文件操作、网络通信……</p>
-<p>这里需要说明的是，我们还是需要学习汇编语言的。因为如果你想更深入地了解计算机是怎么运作的，那么是需要了解汇编语言的。虽然我们几乎不再用汇编语言编程了，但是如果你需要写一些如 lock free 之类高并发的东西，那么了解汇编语言，能有助于你更好地理解和思考。</p>
-<ul>
-<li>编程范式：各种编程语言都有它们各自的编程范式，用于解决各种问题。比如面向对象编程（C++、Java）、泛型编程（C++、Go、C#）、函数式编程（JavaScript、 Python、Lisp、Haskell、Erlang）等。</li>
-</ul>
-<p>学习好编程范式，有助于培养编程的抽象思维，提高编程效率，提高程序的结构合理性、可读性和可维护性，降低代码的冗余度，提高代码的运行效率。要学习编程范式，可以多了解各种程序设计语言的功能特性。</p>
-<ul>
-<li>算法和数据结构：算法（及其相应的数据结构）是程序设计的有力支撑。适当地应用算法，可以有效地抽象问题，提高程序的合理性和执行效率。算法是编程中最最重要的东西，也是计算机科学中最重要的东西。</li>
-</ul>
-<p>任何有技术含量的软件中一定有高级的算法和数据结构。比如 epoll 中使用了红黑树，数据库索引使用了 B+ 树……而就算是你的业务系统中，也一定使用各种排序、过滤和查找算法。学习算法不仅是为了写出运转更为高效的代码，而且更是为了能够写出可以覆盖更多场景的正确代码。</p>
-<h4 id="系统部分"><a href="#系统部分" class="headerlink" title="系统部分"></a>系统部分</h4><ul>
-<li>计算机系统原理：CPU 的体系结构（指令集 [CISC/RISC]、分支预测、缓存结构、总线、DMA、中断、陷阱、多任务、虚拟内存、虚拟化等），内存的原理与性能特点（SRAM、DRAM、DDR-SDRAM 等），磁盘的原理（机械硬盘 [盘面、磁头臂、磁头、启停区、寻道等]、固态硬盘 [页映射、块的合并与回收算法、TRIM 指令等]），GPU 的原理等。</li>
-</ul>
-<p>学习计算机系统原理的价值在于，除了能够了解计算机的原理之外，你还能举一反三地反推出高维度的分布式架构和高并发高可用的架构设计。</p>
-<p>比如：虚拟化内存就和今天云计算中的虚拟化的原理是相通的，计算机总线和分布式架构中的 ESB 也有相通之处，计算机指令调度、并发控制可以让你更好地理解并发编程和做程序性能调优……这里，推荐书籍《深入理解计算机系统》（Randal E. Bryant）。</p>
-<ul>
-<li>操作系统原理和基础：进程、进程管理、线程、线程调度、多核的缓存一致性、信号量、物理内存管理、虚拟内存管理、内存分配、文件系统、磁盘管理等。</li>
-</ul>
-<p>学习操作系统的价值在于理解程序是怎样被管理的，操作系统对应用程序提供了怎样的支持，抽象出怎样的编程接口（比如 POSIX/Win32 API），性能特性如何（比如控制合理的上下文切换次数），怎样进行进程间通信（如管道、套接字、内存映射等），以便让不同的软件配合一起运行等。</p>
-<p>要学习操作系统知识，一是仔细观察和探索当前使用的操作系统，二是阅读讲操作系统原理的图书，三是阅读 API 文档（如 man pages 和 MSDN Library），并编写调用操作系统功能的程序。这里推荐三本书《UNIX 高级环境编程》、《UNIX 网络编程》和《Windows 核心编程》。</p>
-<p>学习操作系统基础原理的好处是，这是所有程序运行的物理世界，无论上层是像 C/C++ 这样编译成机器码的语言，还是像 Java 这样有 JVM 做中间层的语言，还是像 Python/PHP/Perl/Node.js 这样直接在运行时解释的语言，其在底层都逃离不了操作系统这个物理世界的“物理定律”。</p>
-<p>所以，了解操作系统的原理，可以让你更能本质地理解各种语言或是技术的底层原理。一眼看透本质将让你更容易地掌握和使用高阶技术。</p>
-<ul>
-<li>网络基础：计算机网络是现代计算机不可或缺的一部分。需要了解基本的网络层次结构（ISO/OSI 模型、TCP/IP 协议栈），包括物理层、数据链路层（包含错误重发机制）、网络层（包含路由机制）、传输层（包含连接保持机制）、会话层、表示层、应用层（在 TCP/IP 协议栈里，这三层可以并为一层）。</li>
-</ul>
-<p>比如，底层的 ARP 协议、中间的 TCP/UDP 协议，以及高层的 HTTP 协议。这里推荐书籍《TCP/IP 详解》，学习这些基础的网络协议，可以为我们的高维分布式架构中的一些技术问题提供很多的技术方案。比如：TCP 的滑动窗口限流，完全可以用于分布式服务中的限流方案。</p>
-<ul>
-<li>数据库原理：数据库管理系统是管理数据库的利器。通常操作系统提供文件系统来管理文件数据，而文件比较适合保存连续的信息，如一篇文章、一个图片等。但有时需要保存一个名字等较短的信息。如果单个文件只保存名字这样的几个字节的信息的话，会浪费大量的磁盘空间，而且无法方便地查询（除非使用索引服务）。</li>
-</ul>
-<p>但数据库则更适合保存这种短的数据，而且可以方便地按字段进行查询。现代流行的数据库管理系统有两大类：SQL（基于 B+ 树，强一致性）和 NoSQL（较弱的一致性，较高的存取效率，基于哈希表或其他技术）。</p>
-<p>学习了数据库原理之后更能了解数据库访问性能调优的要点，以及保证并发情况下数据操作原子性的方法。要学习数据库，可以阅读各类数据库图书，并多做数据库操作以及数据库编程，多观察分析数据库在运行时的性能。</p>
-<ul>
-<li>分布式技术架构：数据库和应用程序服务器在应对互联网上数以亿计的访问量的时候，需要能进行横向扩展，才能提供足够的性能。为了做到这一点，要学习分布式技术架构，包括负载均衡、DNS 解析、多子域名、无状态应用层、缓存层、数据库分片、容错和恢复机制、Paxos、Map/Reduce 操作、分布式 SQL 数据库一致性（以 Google Cloud Spanner 为代表）等知识点。</li>
-</ul>
-<p>学习分布式技术架构的有效途径是参与到分布式项目的开发中去，并阅读相关论文。</p>
-<blockquote>
-<p>注意，上面这些基础知识通常不是可以速成的。虽然说，你可以在一两年内看完相关的书籍或论文，但是，我想说的是，这些基础技术是需要你用一生的时间来学习的，因为基础上的技术和知识，会随着阅历和经验的增加而有不同的感悟。</p>
-</blockquote>
-<h3 id="以下是我对这些基础知识整理的思维导图，可能看的更清晰一点"><a href="#以下是我对这些基础知识整理的思维导图，可能看的更清晰一点" class="headerlink" title="以下是我对这些基础知识整理的思维导图，可能看的更清晰一点"></a>以下是我对这些基础知识整理的思维导图，可能看的更清晰一点</h3><p><img src="http://p0c736231.bkt.clouddn.com/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86.png" alt=""></p>
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>   给一个系统定位问题的时候，知识，经验是关键基础，数据是依据，工具是运用知识处理数据的手段，这里说的数据包括：运行日志、异常堆栈、GC日志、线程快照、堆转储快照等。在jdk的bin目录下面有一些命令行工具，这些工具都是jdk/lib/tools.jar类库的一层薄包装，它们主要的功能代码是在tools类库中实现的。JDK开发团队选择采用Java代码实现这些监控工具是有特别用意的：当应用程序部署到生产环境后，无论是直接接触物理服务器还是远程Telnet到服务器上都可能会受到限制，借助tools.jar类库里面的接口，我们可以直接在应用程序中实现功能强大的监控分析功能。</p>
+<h3 id="jps-虚拟机进程状况工具"><a href="#jps-虚拟机进程状况工具" class="headerlink" title="jps:虚拟机进程状况工具"></a>jps:虚拟机进程状况工具</h3><p>   可以列出正在运行的虚拟机进程，并显示虚拟机执行主类（Main Class,main()函数所在的类）名称以及这些进程的本地虚拟机唯一ID<br>   jps命令格式 jps [options] [hostid]<br>   jps可以通过RMI协议开启了RMI服务的远程虚拟机进程状态，hostid为RMI注册表中注册的主机名。<br>jps工具主要选项<br>选项 作用<br>-q 只输出LVMID，省略主类的名称<br>-m 输出虚拟机进程启动时传递给主类main（）函数的参数<br>-l 输出主类的全名，如果进程执行的是jar包，输出jar路径<br>-v 输出虚拟机进程启动时jvm参数</p>
+<h3 id="jstat：虚拟机统计信息监视工具"><a href="#jstat：虚拟机统计信息监视工具" class="headerlink" title="jstat：虚拟机统计信息监视工具"></a>jstat：虚拟机统计信息监视工具</h3><p>  用于显示监控虚拟机各种运行状态信息的命令行工具。他可以显示本地或者远程虚拟机进程中的类装载、内存、垃圾收集、JIT编译等运行数据。<br>jstat命令格式：jstat [option vmid [interval [s|ms] [count]] ]<br>对于命令格式中的VMID和LVMID，如过是本地虚拟机进程，VMID和LVMID是一致的，如果是远程虚拟机，那VMID的格式应当是：[protocol:] [//] lvmid[@hostname[:port]/servername].<br>参数inteval和count代表查询间隔和次数，如果省略这两个参数，说明只查询一次，假设需要每250毫秒查询一次进程2764垃圾收集状况，一共查询20次，那命令应当是<br>jstat -gc 2764 250 20<br>选项option代表着用户希望查询的虚拟机信息，主要分为3类：类装载，垃圾回收，运行期编译状况<br>​<br>jstat工具主要选项<br>选项 作用<br>-class 监视装载类、卸载类、总空间以及类装载所耗费的时间<br>-gc 监视java堆状况，包括eden区、两个survivor区、老年代、永久代等的容量、已用空间、GC时间合计信息<br>-gccapacity 监视内容与-gc基本相同，但输出主要关注java堆各个区域使用到最大、最小空间<br>-gcutil 监视内容与-gc基本相同，但输出主要关注已使用控件占总空间的百分比<br>-gccause 与-gcutil功能一样，但是会额外输出导致上一次gc产生的原因<br>-gcnew 监视新生代GC情况<br>-gcnewcapacity 监视内容与-gcnew基本相同，输出主要关注使用到的最大、最小空间<br>-gcold 监视老年代GC情况<br>-gcoldcapacity 监视内容与-gcold基本相同，输出主要关注使用到的最大、最小空间<br>-gcpermcapacity 输出永久代使用到的最大、最小空间<br>-compiler 输出JIT编译过的方法、耗时等信息<br>-printcompilation 输出已经被JIT编译过的方法</p>
+<h3 id="jinfo：java配置信息工具"><a href="#jinfo：java配置信息工具" class="headerlink" title="jinfo：java配置信息工具"></a>jinfo：java配置信息工具</h3><p>jinfo的作用是实时地查看和调整虚拟机各项参数，使用jps命令的-v参数可以查看虚拟机启动时显示指定的参数列表，但如果想知道未被指定的参数系统默认值，但如果想知道未被显示指定的参数的系统默认值，除了去查找资料，就只能使用jinfo的-flag选项进行查询了，jinfo还可以使用-sysprops选项把虚拟机进程的System.getProperties()的内容打印出来<br>jinfo命令格式：jinfo[option] pid</p>
+<h3 id="jmap-Java内存映像工具"><a href="#jmap-Java内存映像工具" class="headerlink" title="jmap:Java内存映像工具"></a>jmap:Java内存映像工具</h3><p>jmap命令用于生成堆转储快照。jmap的作用并不仅仅为了获取dump文件，它还可以查询finalize执行队列、java堆和永久代的详细信息。如空间使用率、当前用的是哪种收集器等。<br>和jinfo命令一样，jmap在windows下也受到比较大的限制。除了生成dump文件的-dump选项和用于查看每个类的实例、控件占用统计的-histo选项在所有操作系用都提供之外，其余选项只能在linux/solaris下使用。<br>jmap格式 jmap [option] vmid<br>选项 作用<br>-dump 生成java堆转储快照。格式为： -dump:[live,]format=b,file=,其中live子参数说明是否只dump出存活的对象<br>-finalizerinfo 显示在F-Queue中等待Finalizer线程执行finalize方法的对象。只在Linux/Solaris平台下有效<br>-heap 显示java堆详细信息，如使用哪种收集器、参数配置、分代情况等，在Linux/Solaris平台下有效<br>-jisto 显示堆中对象统计信息，包含类、实例对象、合集容量<br>-permstat 以ClassLoader为统计口径显示永久代内存状态。只在Linux/Solaris平台下有效<br>-F 当虚拟机进程对-dump选项没有相应时。可使用这个选项强制生成dump快照。只在Linux/Solaris平台下有效</p>
+<h3 id="jhat：虚拟机堆转储快照分析工具"><a href="#jhat：虚拟机堆转储快照分析工具" class="headerlink" title="jhat：虚拟机堆转储快照分析工具"></a>jhat：虚拟机堆转储快照分析工具</h3><p>Sun JDK提供jhat命令与jmap搭配使用，来分析jmap生成的堆转储快照，jhat内置了一个微型的HTTP/HTML服务器，生成dump文件的分析结果后，可以在浏览器中查看。<br>用法举例: jhat test1.bin<br>test1.bin为生成的dump文件。<br>屏幕显示“Server is ready.”的提示后，用户在浏览器中键入<a href="http://localhost:7000就可以看到分析的结果了。" target="_blank" rel="external">http://localhost:7000就可以看到分析的结果了。</a><br>分析结果默认是以包围单位进行分组显示，分析内存泄漏问题主要会使用到其中的“Heap Histogram”与OQL标签的功能。前者可以找到内存中总容量最大的对象。后者是标准的对象查询语言，使用类似SQL的语法对内存中的对象进行查询统计。</p>
+<h3 id="jstack-Java堆栈跟踪工具"><a href="#jstack-Java堆栈跟踪工具" class="headerlink" title="jstack:Java堆栈跟踪工具"></a>jstack:Java堆栈跟踪工具</h3><p>jstack命令用于生成虚拟机当前时刻的线程快照（一般称为threaddump或者javacore文件）。线程快照就是当前虚拟机内每一条线程正在执行的方法堆栈的集合，生成线程快照的主要目的是定位线程出现长时间停顿的原因，如线程死锁、死循环、请求外部资源导致的长时间等待都是导致线程长时间停顿的常见原因，线程出现停顿的时候通过jstack来查看各个线程的调用堆栈，就可以知道没有响应的线程到底在后台做什么事情，或者等待着什么资源<br>jstack命令格式：jstack [option] vmid<br>jstack工具主要选型<br>选项 作用<br>-F 当正常输出的请求不被响应时，强制输出线程堆栈<br>-l 除堆栈外，显示关于锁的附加信息<br>-m 如果调用到本地方法的话，可以显示c/c++的堆栈<br>在JDK1.5中，java.lang.Thread类新增了一个getAllstackTraces（）方法用于获取虚拟机中所有线程的StackTraceElement对象。使用这个方法可以通过简单的几行代码就完成jstack的大部分功能，在实际项目中可以调用这个方法做个管理员页面</p>
+<h3 id="JDK的可视化工具"><a href="#JDK的可视化工具" class="headerlink" title="JDK的可视化工具"></a>JDK的可视化工具</h3><p>JDK中除了提供大量的命令行工具外，还有两个功能强大的可视化工具：JConsole和VisualVM。<br>JConsole<br>JConsole工具在JDK/bin目录下，启动JConsole后，将自动搜索本机运行的jvm进程，不需要jps命令来查询指定。双击其中一个jvm进程即可开始监控，也可使用“远程进程”来连接远程服务器。<br>VisualVM：多合一故障处理工具<br>VisualVM是一个集成多个JDK命令行工具的可视化工具。VisualVM基于NetBeans平台开发，它具备了插件扩展功能的特性，通过插件的扩展，可用于显示虚拟机进程及进程的配置和环境信息(jps，jinfo)，监视应用程序的CPU、GC、堆、方法区及线程的信息(jstat、jstack)等。VisualVM在JDK/bin目录下。<br>VisualVM的性能分析功能甚至比起JProfiler、YourKit等专业且收费的Profiling工具都不会逊色多少，而且VisualVM还有一个很大的优点：不需要被监视的程序基于特殊Agent运行，因此它对应用程序的实际性能的影响很小，使得它可以直接应用在生产环境中。这个优点是JProfiler、YourKit等工具无法与之媲美的。</p>
 
       
     </div>
@@ -570,7 +528,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="http://bryancrash.site/2017/12/02/论技术基础的重要性/" title="论技术基础的重要性">http://bryancrash.site/2017/12/02/论技术基础的重要性/</a>
+    <a href="http://bryancrash.site/2018/04/05/虚拟机性能监控工具/" title="虚拟机性能监控工具">http://bryancrash.site/2018/04/05/虚拟机性能监控工具/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>
@@ -585,7 +543,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/计算机基础/" rel="tag"><i class="fa fa-tag"></i> -计算机基础</a>
+            <a href="/tags/Java虚拟机/" rel="tag"><i class="fa fa-tag"></i> -Java虚拟机</a>
           
         </div>
       
@@ -598,8 +556,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/12/02/Java内存模型/" rel="next" title="Java内存模型">
-                <i class="fa fa-chevron-left"></i> Java内存模型
+              <a href="/2018/04/05/垃圾收集器/" rel="next" title="垃圾收集器">
+                <i class="fa fa-chevron-left"></i> 垃圾收集器
               </a>
             
           </div>
@@ -608,8 +566,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2017/12/24/HashMap源码分析/" rel="prev" title="HashMap源码分析">
-                HashMap源码分析 <i class="fa fa-chevron-right"></i>
+              <a href="/2018/04/05/类文件结构/" rel="prev" title="类文件结构">
+                类文件结构 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -809,7 +767,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#具体来说，就是分成两个部分：系统和编程。"><span class="nav-number">2.</span> <span class="nav-text">具体来说，就是分成两个部分：系统和编程。</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#编程部分"><span class="nav-number">2.1.</span> <span class="nav-text">编程部分</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#系统部分"><span class="nav-number">2.2.</span> <span class="nav-text">系统部分</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#以下是我对这些基础知识整理的思维导图，可能看的更清晰一点"><span class="nav-number">3.</span> <span class="nav-text">以下是我对这些基础知识整理的思维导图，可能看的更清晰一点</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#jps-虚拟机进程状况工具"><span class="nav-number">2.</span> <span class="nav-text">jps:虚拟机进程状况工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#jstat：虚拟机统计信息监视工具"><span class="nav-number">3.</span> <span class="nav-text">jstat：虚拟机统计信息监视工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#jinfo：java配置信息工具"><span class="nav-number">4.</span> <span class="nav-text">jinfo：java配置信息工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#jmap-Java内存映像工具"><span class="nav-number">5.</span> <span class="nav-text">jmap:Java内存映像工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#jhat：虚拟机堆转储快照分析工具"><span class="nav-number">6.</span> <span class="nav-text">jhat：虚拟机堆转储快照分析工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#jstack-Java堆栈跟踪工具"><span class="nav-number">7.</span> <span class="nav-text">jstack:Java堆栈跟踪工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JDK的可视化工具"><span class="nav-number">8.</span> <span class="nav-text">JDK的可视化工具</span></a></li></ol></div>
             
 
           </div>
